@@ -1,0 +1,185 @@
+@charset "utf-8";
+
+// FontAwesome
+$fa_font_path: "~@fortawesome/fontawesome-free/webfonts";
+@import '~@fortawesome/fontawesome-free/scss/fontawesome.scss';
+@import '~@fortawesome/fontawesome-free/scss/regular.scss';
+@import '~@fortawesome/fontawesome-free/scss/solid.scss';
+@import '~@fortawesome/fontawesome-free/scss/brands.scss';
+
+// OpenSans
+$FontPathOpenSans: "~open-sans-fonts/open-sans";
+@import '~open-sans-fonts/open-sans';
+$family-primary: 'Open Sans';
+
+// Bulma
+@import "~bulma/bulma";
+@import '~bulma-slider/dist/css/bulma-slider.sass';
+
+
+/** 
+--------------------------------------------
+Card Flip
+--------------------------------------------
+Setup a mixin for your flip so you can include it into any element that has this or similar structure
+
+ <figure class="gamecard"> <-- can be any class you need.
+  <div class="face front"></div> <- required classes
+  <div class="face back"> </div>  <- required classes
+ </figure>
+
+Supports arguments for Speed and Direction. 
+The direction you can specify using "x" "y" or "z"
+
+Use it by putting "@include flip();" in the parent element you want to flip.
+You can style the card however you want. Here are some examples. 
+
+*/
+@mixin flip($speed: 0.5s, $direction: "y") {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform $speed;
+    &.flip {
+      @if $direction == "x" {
+        transform: rotateX(180deg);
+      } 
+      @if $direction == "y" {
+        transform: rotateY(180deg);
+      } 
+      @if $direction == "z" {
+        transform: rotateZ(180deg);
+      } 
+      transition: transform $speed;
+    }
+    .face {
+      // setup the face of the card to match the size of the card;
+      position: absolute;
+      top: 0px; left: 0px;
+      bottom: 0px; right: 0px;
+      backface-visibility: hidden;
+      transform: translateZ(0.1px); // fix for safari.
+    }
+    .back {
+      // flip the back
+      @if $direction == "x" {
+        transform: rotateX(180deg);
+      } 
+      @if $direction == "y" {
+        transform: rotateY(180deg);
+      } 
+      @if $direction == "z" {
+        transform: rotateZ(180deg);
+      }   
+    }
+  }
+  
+  // Ok, lets style the card.
+  // lets set some good basics going.
+  .gamecard {
+    @include flip(); // include the flip feature.
+    user-select: none; // disable selections
+    cursor: pointer;  // give the user a hand so they know to click
+    width: 181px; height: 256px;
+    background-size: 1131.49%;
+    color: white;
+    display: inline-block; // stack em!
+    overflow:hidden; background-repeat: no-repeat;    
+    background-image:url(static/assets/VintagePlayingCards/css-sprite-combined.png);
+    zoom:0.5;
+    -moz-transform:scale(0.5);
+    -moz-transform-origin: 0 0;
+
+    .face { // styles that will be applied to each face of the card.
+      border-radius: 10px; 
+    }
+    .front { // front side styles.
+      color: #ffffff;
+      transition: background 0.3s;
+    }
+    .back { // back side styles
+      background: hsl(0, 0%, 20%);
+      background-size: cover;
+      color: #FFE81F;
+      img {
+        width: 100%; 
+        border-top-left-radius: 10px; 
+        border-top-right-radius: 10px;
+        border-bottom: 3px double #FFE81F;
+      }  
+      
+    }
+  }
+
+/*
+resized with
+https://bulkresizephotos.com/en?extension=png&resize_value=20
+Responsive CSS Sprite created using: https://responsive-css.us/
+*/
+
+// .css-sprite-CardBackFaceBlueLargePattern, .css-sprite-CardBackFaceBlueSmallPattern, .css-sprite-CardBackFaceWhiteBlueLargePattern, .css-sprite-CardBackFaceWhiteBlueSmallPattern, .css-sprite-Clubs10, .css-sprite-Clubs2, .css-sprite-Clubs3, .css-sprite-Clubs4, .css-sprite-Clubs5, .css-sprite-Clubs6, .css-sprite-Clubs7, .css-sprite-Clubs8, .css-sprite-Clubs9, .css-sprite-ClubsAce, .css-sprite-ClubsJack, .css-sprite-ClubsJoker, .css-sprite-ClubsKing, .css-sprite-ClubsQueen, .css-sprite-Diamonds10, .css-sprite-Diamonds2, .css-sprite-Diamonds3, .css-sprite-Diamonds4, .css-sprite-Diamonds5, .css-sprite-Diamonds6, .css-sprite-Diamonds7, .css-sprite-Diamonds8, .css-sprite-Diamonds9, .css-sprite-DiamondsAce, .css-sprite-DiamondsJack, .css-sprite-DiamondsJoker, .css-sprite-DiamondsKing, .css-sprite-DiamondsQueen, .css-sprite-Hearts10, .css-sprite-Hearts2, .css-sprite-Hearts3, .css-sprite-Hearts4, .css-sprite-Hearts5, .css-sprite-Hearts6, .css-sprite-Hearts7, .css-sprite-Hearts8, .css-sprite-Hearts9, .css-sprite-HeartsAce, .css-sprite-HeartsJack, .css-sprite-HeartsJoker, .css-sprite-HeartsKing, .css-sprite-HeartsQueen, .css-sprite-Spades10, .css-sprite-Spades2, .css-sprite-Spades3, .css-sprite-Spades4, .css-sprite-Spades5, .css-sprite-Spades6, .css-sprite-Spades7, .css-sprite-Spades8, .css-sprite-Spades9, .css-sprite-SpadesAce, .css-sprite-SpadesJack, .css-sprite-SpadesJoker, .css-sprite-SpadesKing, .css-sprite-SpadesQueen 
+// {display:inline-block; overflow:hidden; background-repeat: no-repeat;
+// background-image:url(static/assets/VintagePlayingCards/css-sprite-combined.png);
+// zoom:0.5;
+// -moz-transform:scale(0.5);
+// -moz-transform-origin: 0 0;}
+
+.css-sprite-CardBackFaceBlueLargePattern {background-position: 0.107124% 0.111607%; }
+.css-sprite-CardBackFaceBlueSmallPattern {background-position: 88.3235% 57.7009%; }
+.css-sprite-CardBackFaceWhiteBlueLargePattern {background-position: 98.1253% 57.7009%; }
+.css-sprite-CardBackFaceWhiteBlueSmallPattern {background-position: 9.90894% 0.111607%; }
+.css-sprite-Clubs10 {background-position: 98.1253% 0.111607%; }
+.css-sprite-Clubs2 {background-position: 19.7108% 0.111607%; }
+.css-sprite-Clubs3 {background-position: 29.5126% 0.111607%; }
+.css-sprite-Clubs4 {background-position: 39.3144% 0.111607%; }
+.css-sprite-Clubs5 {background-position: 49.1162% 0.111607%; }
+.css-sprite-Clubs6 {background-position: 58.9181% 0.111607%; }
+.css-sprite-Clubs7 {background-position: 68.7199% 0.111607%; }
+.css-sprite-Clubs8 {background-position: 78.5217% 0.111607%; }
+.css-sprite-Clubs9 {background-position: 88.3235% 0.111607%; }
+.css-sprite-ClubsAce {background-position: 0.107124% 14.5089%; }
+.css-sprite-ClubsJack {background-position: 9.90894% 14.5089%; }
+.css-sprite-ClubsJoker {background-position: 19.7108% 14.5089%; }
+.css-sprite-ClubsKing {background-position: 29.5126% 14.5089%; }
+.css-sprite-ClubsQueen {background-position: 39.3144% 14.5089%; }
+.css-sprite-Diamonds10 {background-position: 19.7108% 28.9063%; }
+.css-sprite-Diamonds2 {background-position: 49.1162% 14.5089%; }
+.css-sprite-Diamonds3 {background-position: 58.9181% 14.5089%; }
+.css-sprite-Diamonds4 {background-position: 68.7199% 14.5089%; }
+.css-sprite-Diamonds5 {background-position: 78.5217% 14.5089%; }
+.css-sprite-Diamonds6 {background-position: 88.3235% 14.5089%; }
+.css-sprite-Diamonds7 {background-position: 98.1253% 14.5089%; }
+.css-sprite-Diamonds8 {background-position: 0.107124% 28.9063%; }
+.css-sprite-Diamonds9 {background-position: 9.90894% 28.9063%; }
+.css-sprite-DiamondsAce {background-position: 29.5126% 28.9063%; }
+.css-sprite-DiamondsJack {background-position: 39.3144% 28.9063%; }
+.css-sprite-DiamondsJoker {background-position: 49.1162% 28.9063%; }
+.css-sprite-DiamondsKing {background-position: 58.9181% 28.9063%; }
+.css-sprite-DiamondsQueen {background-position: 68.7199% 28.9063%; }
+.css-sprite-Hearts10 {background-position: 49.1162% 43.3036%; }
+.css-sprite-Hearts2 {background-position: 78.5217% 28.9063%; }
+.css-sprite-Hearts3 {background-position: 88.3235% 28.9063%; }
+.css-sprite-Hearts4 {background-position: 98.1253% 28.9063%; }
+.css-sprite-Hearts5 {background-position: 0.107124% 43.3036%; }
+.css-sprite-Hearts6 {background-position: 9.90894% 43.3036%; }
+.css-sprite-Hearts7 {background-position: 19.7108% 43.3036%; }
+.css-sprite-Hearts8 {background-position: 29.5126% 43.3036%; }
+.css-sprite-Hearts9 {background-position: 39.3144% 43.3036%; }
+.css-sprite-HeartsAce {background-position: 58.9181% 43.3036%; }
+.css-sprite-HeartsJack {background-position: 68.7199% 43.3036%; }
+.css-sprite-HeartsJoker {background-position: 78.5217% 43.3036%; }
+.css-sprite-HeartsKing {background-position: 88.3235% 43.3036%; }
+.css-sprite-HeartsQueen {background-position: 98.1253% 43.3036%; }
+.css-sprite-Spades10 {background-position: 78.5217% 57.7009%; }
+.css-sprite-Spades2 {background-position: 0.107124% 57.7009%; }
+.css-sprite-Spades3 {background-position: 9.90894% 57.7009%; }
+.css-sprite-Spades4 {background-position: 19.7108% 57.7009%; }
+.css-sprite-Spades5 {background-position: 29.5126% 57.7009%; }
+.css-sprite-Spades6 {background-position: 39.3144% 57.7009%; }
+.css-sprite-Spades7 {background-position: 49.1162% 57.7009%; }
+.css-sprite-Spades8 {background-position: 58.9181% 57.7009%; }
+.css-sprite-Spades9 {background-position: 68.7199% 57.7009%; }
+.css-sprite-SpadesAce {background-position: 0.107124% 72.0982%; }
+.css-sprite-SpadesJack {background-position: 9.90894% 72.0982%; }
+.css-sprite-SpadesJoker {background-position: 19.7108% 72.0982%; }
+.css-sprite-SpadesKing {background-position: 29.5126% 72.0982%; }
+.css-sprite-SpadesQueen {background-position: 39.3144% 72.0982%; }
