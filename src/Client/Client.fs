@@ -143,6 +143,20 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
 
 let (++) = List.append
 
+let drawStatus connectionState =
+    Tag.tag [
+        Tag.Color
+            (match connectionState with
+             | DisconnectedFromServer -> Color.IsDanger
+             | Connecting -> Color.IsWarning
+             | ConnectedToServer _ -> Color.IsSuccess)
+    ] [
+        match connectionState with
+        | DisconnectedFromServer -> str "Disconnected from server"
+        | Connecting -> str "Connecting..."
+        | ConnectedToServer _ -> str "Connected to server"
+    ]
+
 let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea card =
   let currentPlayerIsLocal = runningGame.CurrentPlayer.IsSome && runningGame.CurrentPlayer.Value.ClientId = clientId
   let droppableProps =
@@ -211,20 +225,6 @@ let viewCard (model : Model) dispatch playArea (card:Card) =
           [ div [ Class "face front" ] [ ]
             div [ Class "face back" ] [ ] ] ]
 
-let drawStatus connectionState =
-    Tag.tag [
-        Tag.Color
-            (match connectionState with
-             | DisconnectedFromServer -> Color.IsDanger
-             | Connecting -> Color.IsWarning
-             | ConnectedToServer _ -> Color.IsSuccess)
-    ] [
-        match connectionState with
-        | DisconnectedFromServer -> str "Disconnected from server"
-        | Connecting -> str "Connecting..."
-        | ConnectedToServer _ -> str "Connected to server"
-    ]
-
 let viewBlankCard model dispatch playArea =
     let dropDestinationOption =
       match playArea with
@@ -257,7 +257,7 @@ let viewBlankCard model dispatch playArea =
 
     Column.column [ Column.Width (Screen.All, Column.Is1); Column.Props cardHtmlProps ]
       [ div cardHtmlProps
-          [ span [ Class "css-sprite-CardBackFaceWhiteBlueSmallPattern" ] [ ] ] ]
+          [ span [ Class "gamecard css-sprite-CardBackFaceWhiteBlueSmallPattern" ] [ ] ] ]
 
 let viewCards model dispatch playArea cards = 
     cards |> List.map (viewCard model dispatch playArea)
@@ -383,7 +383,7 @@ let runningGameView model dispatch =
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
     let handAndDiscardView = ( (handCardsView model dispatch) :: (discardCardsView model dispatch) )
-    Container.container []
+    Container.container [Container.IsFluid]
         [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
               [ Heading.h5 [] [ str ("Draw pile:") ] ]
           Columns.columns []
@@ -418,13 +418,13 @@ let view (model : Model) (dispatch : Msg -> unit) =
                     [ str "Golf Multiplayer" ] ] ]
           match model.GameState with
           | NewGame _ -> 
-            Container.container []
+            Container.container [Container.IsFluid]
                 [ newGameView model dispatch ]
           | Running _ ->
             runningGameView model dispatch
             
           | Finished _ ->
-            Container.container []
+            Container.container [Container.IsFluid]
                 [ finishedGameView model dispatch ] 
         ]
 
@@ -435,7 +435,6 @@ open Elmish.HMR
 
 Program.mkProgram init update view
 |> Program.withSubscription subscription
-// |> Toast.Program.withToast Toast.render
 #if DEBUG
 |> Program.withConsoleTrace
 #endif

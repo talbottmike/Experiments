@@ -79,7 +79,8 @@ You can style the card however you want. Here are some examples.
     @include flip(); // include the flip feature.
     user-select: none; // disable selections
     cursor: pointer;  // give the user a hand so they know to click
-    width: 181px; height: 256px;
+    //width: 181px; height: 256px;
+    width: 12vw; height: 17vw;
     background-size: 1131.49%;
     color: white;
     display: inline-block; // stack em!

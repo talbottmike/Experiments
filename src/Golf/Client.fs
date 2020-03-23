@@ -1,4 +1,4 @@
-module Client
+module GolfClient
 
 open Elmish
 open Elmish.React
@@ -30,26 +30,6 @@ type Msg =
   | UpdateUserName of string
   | IncomingMsg of ClientMsg
   
-let flipAndSelect card =
-  let newPosition = 
-    match card.Position with
-    | FaceUp -> FaceDown
-    | FaceDown -> FaceUp
-  { card with Position = newPosition; Selected = true; }
-
-// let flip card =
-//   match card.Position with
-//   | FaceUp -> flipUp card
-//   | FaceDown -> flipDown card
-
-// let selectCard card = { card with Selected = true; }
-let removeCard cards card = cards |> List.filter (fun c -> c <> card)
-let replaceCard cards newCard oldCard = cards |> List.map (fun c -> if c = oldCard then newCard else c) 
-// let tryFlip cards card = cards |> List.map (fun c -> if c = card then flip c else c )
-let tryFlipUp cards card = cards |> List.map (fun c -> if c = card then Golf.flipUp c else c )
-// let tryFlipAndSelect cards id = cards |> List.map (fun c -> if c.Id = id then flipAndSelect c else c )
-// let trySelect cards id = cards |> List.map (fun c -> if c.Id = id then selectCard c else c )
-
 let init () : Model * Cmd<Msg> =
   let gameState = Golf.blankGame
   let model =
@@ -203,9 +183,9 @@ let viewBlankCard model dispatch playArea =
         ]
     let cardHtmlProps = ( Style ( cardStyle ) :> IHTMLProp :: droppableProps) 
 
-    Column.column [ Column.Width (Screen.All, Column.Is1); Column.Props cardHtmlProps ]
+    Column.column [ Column.Width (Screen.All, Column.Is1;); Column.Props cardHtmlProps;  ]
       [ div cardHtmlProps
-          [ span [ Class "css-sprite-CardBackFaceWhiteBlueSmallPattern" ] [ ] ] ]
+          [ span [ Class "gamecard css-sprite-CardBackFaceWhiteBlueSmallPattern" ] [ ] ] ]
 
 let viewCards model dispatch playArea cards = 
     cards |> List.map (viewCard model dispatch playArea)
@@ -214,7 +194,7 @@ let viewFinalCards cards =
   cards |> List.map (fun card -> 
     Column.column [ Column.Width (Screen.All, Column.Is1) ] 
       [ div []
-          [ span [ ClassName (Golf.getClassName card) ] [ ] ] ] )
+          [ span [ ClassName (sprintf "gamecard flip %s" (Golf.getClassName card)) ] [ ] ] ] )
 
 let [<Literal>] ESC_KEY = 27.
 let [<Literal>] ENTER_KEY = 13.
@@ -330,7 +310,7 @@ let runningGameView model dispatch =
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
     let handAndDiscardView = ( (handCardsView model dispatch) :: (discardCardsView model dispatch) )
-    Container.container []
+    Container.container [Container.IsFluid]
         [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
               [ Heading.h5 [] [ str ("Draw pile:") ] ]
           Columns.columns []
@@ -365,13 +345,13 @@ let view (model : Model) (dispatch : Msg -> unit) =
                     [ str "Golf Multiplayer" ] ] ]
           match model.GameState with
           | NewGame _ -> 
-            Container.container []
+            Container.container [Container.IsFluid]
                 [ newGameView model dispatch ]
           | Running _ ->
             runningGameView model dispatch
             
           | Finished _ ->
-            Container.container []
+            Container.container [Container.IsFluid]
                 [ finishedGameView model dispatch ] 
         ]
 
@@ -381,11 +361,6 @@ open Elmish.HMR
 #endif
 
 Program.mkProgram init update view
-// |> Program.withBridgeConfig
-//     (
-//         Bridge.endpoint "/socket/init"
-//         |> Bridge.withMapping Remote
-//     )
 #if DEBUG
 |> Program.withConsoleTrace
 #endif
