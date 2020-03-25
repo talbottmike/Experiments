@@ -16,14 +16,13 @@ $family-primary: 'Open Sans';
 @import "~bulma/bulma";
 @import '~bulma-slider/dist/css/bulma-slider.sass';
 
-
 /** 
 --------------------------------------------
 Card Flip
 --------------------------------------------
 Setup a mixin for your flip so you can include it into any element that has this or similar structure
 
- <figure class="gamecard"> <-- can be any class you need.
+ <figure class="card"> <-- can be any class you need.
   <div class="face front"></div> <- required classes
   <div class="face back"> </div>  <- required classes
  </figure>
@@ -36,80 +35,71 @@ You can style the card however you want. Here are some examples.
 
 */
 @mixin flip($speed: 0.5s, $direction: "y") {
-    position: relative;
-    transform-style: preserve-3d;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform $speed;
+  &.flip {
+    @if $direction == "x" {
+      transform: rotateX(180deg);
+    } 
+    @if $direction == "y" {
+      transform: rotateY(180deg);
+    } 
+    @if $direction == "z" {
+      transform: rotateZ(180deg);
+    } 
     transition: transform $speed;
-    &.flip {
-      @if $direction == "x" {
-        transform: rotateX(180deg);
-      } 
-      @if $direction == "y" {
-        transform: rotateY(180deg);
-      } 
-      @if $direction == "z" {
-        transform: rotateZ(180deg);
-      } 
-      transition: transform $speed;
-    }
-    .face {
-      // setup the face of the card to match the size of the card;
-      position: absolute;
-      top: 0px; left: 0px;
-      bottom: 0px; right: 0px;
-      backface-visibility: hidden;
-      transform: translateZ(0.1px); // fix for safari.
-    }
-    .back {
-      // flip the back
-      @if $direction == "x" {
-        transform: rotateX(180deg);
-      } 
-      @if $direction == "y" {
-        transform: rotateY(180deg);
-      } 
-      @if $direction == "z" {
-        transform: rotateZ(180deg);
-      }   
-    }
   }
-  
-  // Ok, lets style the card.
-  // lets set some good basics going.
-  .gamecard {
-    @include flip(); // include the flip feature.
-    user-select: none; // disable selections
-    cursor: pointer;  // give the user a hand so they know to click
-    //width: 181px; height: 256px;
-    width: 12vw; height: 17vw;
-    background-size: 1131.49%;
-    color: white;
-    display: inline-block; // stack em!
-    overflow:hidden; background-repeat: no-repeat;    
-    background-image:url(static/assets/VintagePlayingCards/css-sprite-combined.png);
-    zoom:0.5;
-    -moz-transform:scale(0.5);
-    -moz-transform-origin: 0 0;
+  .face {
+    // setup the face of the card to match the size of the card;
+    position: absolute;
+    top: 0px; left: 0px;
+    bottom: 0px; right: 0px;
+    backface-visibility: hidden;
+    transform: translateZ(0.1px); // fix for safari.
+  }
+  .back {
+    // flip the back
+    @if $direction == "x" {
+      transform: rotateX(180deg);
+    } 
+    @if $direction == "y" {
+      transform: rotateY(180deg);
+    } 
+    @if $direction == "z" {
+      transform: rotateZ(180deg);
+    }   
+  }
+}
 
-    .face { // styles that will be applied to each face of the card.
-      border-radius: 10px; 
-    }
-    .front { // front side styles.
-      color: #ffffff;
-      transition: background 0.3s;
-    }
-    .back { // back side styles
-      background: hsl(0, 0%, 20%);
-      background-size: cover;
-      color: #FFE81F;
-      img {
-        width: 100%; 
-        border-top-left-radius: 10px; 
-        border-top-right-radius: 10px;
-        border-bottom: 3px double #FFE81F;
-      }  
-      
-    }
+// Ok, lets style the card.
+// lets set some good basics going.
+.flippableCard {
+ text-align:left;
+  @include flip(); // include the flip feature.
+  user-select: none; // disable selections
+  cursor: pointer;  // give the user a hand so they know to click
+  width: 12vw; height: 17vw;
+  display: inline-block; // stack em!
+  zoom:0.5;
+  // -moz-transform:scale(0.5);
+  // -moz-transform-origin: 0 0;
+  margin: 10px;
+  .face { // styles that will be applied to each face of the card.
+    border-radius: 10px; 
   }
+}
+
+// Game card specific styles
+.gameCard {
+  .face {
+    background-size: 1131.49%;
+    background-image: url(static/assets/VintagePlayingCards/css-sprite-combined.png);
+  }
+    .front {
+      background-position: 0.107124% 0.111607%;
+  }
+}
 
 /*
 resized with

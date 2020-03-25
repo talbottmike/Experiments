@@ -205,25 +205,29 @@ let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea ca
     | true -> [ OnClick (fun e -> FlipCard card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
     | false -> []
 
-  let spriteClassName =
+  let flipClassName =
     match card.Position with
-    | FaceDown -> "css-sprite-CardBackFaceWhiteBlueSmallPattern"
-    | FaceUp -> sprintf "flip %s" (Golf.getClassName card)
+    | FaceDown -> ""
+    | FaceUp -> "flip"
 
-  let gameCardClasses = sprintf "gamecard %s" spriteClassName |> Class :> IHTMLProp |> List.singleton
+  let gameCardClasses = sprintf "flippableCard gameCard %s" flipClassName |> Class :> IHTMLProp |> List.singleton
   gameCardClasses ++ flipableProps ++ moveAbleProps ++ droppableProps
 
 let viewCard (model : Model) dispatch playArea (card:Card) =
   match model.GameState with
   | NewGame _
-  | Finished _ 
+  | Finished _
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
     let cardProps = getCardProps dispatch model.ClientId runningGame playArea card    
+    let spriteClassName =
+      match card.Position with
+      | FaceDown -> "face back"
+      | FaceUp -> sprintf "face back %s" (Golf.getClassName card)
     Column.column [ Column.Width (Screen.All, Column.Is1); ] 
       [ div cardProps 
           [ div [ Class "face front" ] [ ]
-            div [ Class "face back" ] [ ] ] ]
+            div [ Class spriteClassName ] [ ] ] ]
 
 let viewBlankCard model dispatch playArea =
     let dropDestinationOption =
