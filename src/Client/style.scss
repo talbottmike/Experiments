@@ -12,9 +12,25 @@ $FontPathOpenSans: "~open-sans-fonts/open-sans";
 @import '~open-sans-fonts/open-sans';
 $family-primary: 'Open Sans';
 
+
+// First include initial variables and helpers function from Bulma
+@import "~bulma/sass/utilities/initial-variables";
+@import "~bulma/sass/utilities/functions";
+
+$primary: #746a61;
+
+// Invert colors
+$primary-invert: findColorInvert($primary);
+
+// Import the derived variables from Bulma
+// It will use our $custom-colors
+@import "~bulma/sass/utilities/derived-variables";
+
+
 // Bulma
 @import "~bulma/bulma";
 @import '~bulma-slider/dist/css/bulma-slider.sass';
+
 
 /** 
 --------------------------------------------
@@ -90,6 +106,10 @@ You can style the card however you want. Here are some examples.
   }
 }
 
+.playArea {
+  background-image: url(static/assets/table-top.jpg);
+}
+
 // Game card specific styles
 .gameCard {
   .face {
@@ -97,7 +117,7 @@ You can style the card however you want. Here are some examples.
     background-image: url(static/assets/VintagePlayingCards/css-sprite-combined.png);
   }
     .front {
-      background-position: 0.107124% 0.111607%;
+      background-position: 98.1253% 57.7009%;
   }
 }
 
@@ -106,13 +126,6 @@ resized with
 https://bulkresizephotos.com/en?extension=png&resize_value=20
 Responsive CSS Sprite created using: https://responsive-css.us/
 */
-
-// .css-sprite-CardBackFaceBlueLargePattern, .css-sprite-CardBackFaceBlueSmallPattern, .css-sprite-CardBackFaceWhiteBlueLargePattern, .css-sprite-CardBackFaceWhiteBlueSmallPattern, .css-sprite-Clubs10, .css-sprite-Clubs2, .css-sprite-Clubs3, .css-sprite-Clubs4, .css-sprite-Clubs5, .css-sprite-Clubs6, .css-sprite-Clubs7, .css-sprite-Clubs8, .css-sprite-Clubs9, .css-sprite-ClubsAce, .css-sprite-ClubsJack, .css-sprite-ClubsJoker, .css-sprite-ClubsKing, .css-sprite-ClubsQueen, .css-sprite-Diamonds10, .css-sprite-Diamonds2, .css-sprite-Diamonds3, .css-sprite-Diamonds4, .css-sprite-Diamonds5, .css-sprite-Diamonds6, .css-sprite-Diamonds7, .css-sprite-Diamonds8, .css-sprite-Diamonds9, .css-sprite-DiamondsAce, .css-sprite-DiamondsJack, .css-sprite-DiamondsJoker, .css-sprite-DiamondsKing, .css-sprite-DiamondsQueen, .css-sprite-Hearts10, .css-sprite-Hearts2, .css-sprite-Hearts3, .css-sprite-Hearts4, .css-sprite-Hearts5, .css-sprite-Hearts6, .css-sprite-Hearts7, .css-sprite-Hearts8, .css-sprite-Hearts9, .css-sprite-HeartsAce, .css-sprite-HeartsJack, .css-sprite-HeartsJoker, .css-sprite-HeartsKing, .css-sprite-HeartsQueen, .css-sprite-Spades10, .css-sprite-Spades2, .css-sprite-Spades3, .css-sprite-Spades4, .css-sprite-Spades5, .css-sprite-Spades6, .css-sprite-Spades7, .css-sprite-Spades8, .css-sprite-Spades9, .css-sprite-SpadesAce, .css-sprite-SpadesJack, .css-sprite-SpadesJoker, .css-sprite-SpadesKing, .css-sprite-SpadesQueen 
-// {display:inline-block; overflow:hidden; background-repeat: no-repeat;
-// background-image:url(static/assets/VintagePlayingCards/css-sprite-combined.png);
-// zoom:0.5;
-// -moz-transform:scale(0.5);
-// -moz-transform-origin: 0 0;}
 
 .css-sprite-CardBackFaceBlueLargePattern {background-position: 0.107124% 0.111607%; }
 .css-sprite-CardBackFaceBlueSmallPattern {background-position: 88.3235% 57.7009%; }

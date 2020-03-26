@@ -189,7 +189,7 @@ let viewBlankCard model dispatch playArea =
 
     Column.column [ Column.Width (Screen.All, Column.Is1;); Column.Props cardHtmlProps;  ]
       [ div cardHtmlProps
-          [ span [ Class "gamecard css-sprite-CardBackFaceWhiteBlueSmallPattern" ] [ ] ] ]
+          [ span [ Class "gamecard css-sprite-CardBackFaceWhiteBlueLargePattern" ] [ ] ] ]
 
 let viewCards model dispatch playArea cards = 
     cards |> List.map (viewCard model dispatch playArea)
@@ -336,7 +336,7 @@ let runningGameView model dispatch =
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
     let handAndDiscardView = ( (handCardsView model dispatch) :: (discardCardsView model dispatch) )
-    Container.container [Container.IsFluid]
+    Container.container [Container.IsFluid; Container.CustomClass "playArea" ]
         [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
               [ Heading.h5 [] [ str ("Draw pile:") ] ]
           Columns.columns []
@@ -368,17 +368,21 @@ let view (model : Model) (dispatch : Msg -> unit) =
         [ Navbar.navbar [ Navbar.Color IsPrimary ]
             [ Navbar.Item.div [ ]
                 [ Heading.h2 [ ]
-                    [ str "Golf Multiplayer" ] ] ]
+                    [ str "Golf" ] ] ]
           match model.GameState with
           | NewGame _ -> 
             Container.container [Container.IsFluid]
                 [ newGameView model dispatch ]
           | Running _ ->
-            runningGameView model dispatch
-            
+            Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] [
+              Container.container [Container.IsFluid;]
+                  [ runningGameView model dispatch ] 
+            ]
           | Finished _ ->
-            Container.container [Container.IsFluid]
-                [ finishedGameView model dispatch ] 
+            Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] [
+              Container.container [Container.IsFluid;]
+                  [ finishedGameView model dispatch ] 
+            ]
         ]
 
 #if DEBUG

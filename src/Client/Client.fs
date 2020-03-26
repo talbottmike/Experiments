@@ -447,11 +447,15 @@ let view (model : Model) (dispatch : Msg -> unit) =
             Container.container [Container.IsFluid]
                 [ newGameView model dispatch ]
           | Running _ ->
-            runningGameView model dispatch
-            
+            Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] [
+              Container.container [Container.IsFluid;]
+                  [ runningGameView model dispatch ] 
+            ]
           | Finished _ ->
-            Container.container [Container.IsFluid]
-                [ finishedGameView model dispatch ] 
+            Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] [
+              Container.container [Container.IsFluid;]
+                  [ finishedGameView model dispatch ] 
+            ]
         ]
 
 #if DEBUG
