@@ -36,7 +36,7 @@ type CardRank =
     | Ten -> 10
     | Jack -> 11
     | Queen -> 12
-    | King -> 12
+    | King -> 0
     | Ace -> 1
     | Joker -> -2
 
@@ -232,21 +232,29 @@ module Golf =
   let flipDown card = { card with Position = FaceDown; }
 
   let scoreCards cards =
-    List.zip cards.Row1 cards.Row2
-    |> List.map (fun (r1,r2) -> 
-      let firstScore =
+    let pairedCards = List.zip cards.Row1 cards.Row2
+    let individualColumnResults =
+      pairedCards
+      |> List.sumBy (fun (r1,r2) -> 
         match r1.Value, r2.Value with
-        | (_,Joker),(_,Joker) -> -10 + (Joker.toInt()) + (Joker.toInt())
+        | (_,Joker),(_,Joker) -> (Joker.toInt()) + (Joker.toInt())
         | (_,a),(_,b) when a = b -> 0
         | (_,a),(_,b) -> (a.toInt()) + (b.toInt())
-        
-      (r1,r2,firstScore)
-    )
-    |> List.pairwise
-    |> List.sumBy (fun ((a,b,c),(d,e,f)) -> 
-      let matchingColumnScore = if (a,b) = (d,e) then -10 else 0
-      matchingColumnScore + c + f
-    )
+      )
+
+    let pairedColumnResults =
+      pairedCards
+      |> List.windowed 2
+      |> List.sumBy (fun window -> 
+          let cardRanks = window |> List.collect (fun (x,y) -> [x.Value;y.Value;]) |> List.map snd
+          //[a.Value; b.Value; d.Value; e.Value] |> List.map snd
+          match cardRanks.Head, cardRanks with
+          | Joker, cards when cards |> List.forall (fun x -> x = Joker) -> -20
+          | v, cards when cards |> List.forall (fun x -> x = v) -> -10
+          | _ -> 0
+      )
+
+    individualColumnResults + pairedColumnResults
 
   let scorePlayer player =
     let score = scoreCards player.Cards

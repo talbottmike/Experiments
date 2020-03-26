@@ -197,8 +197,9 @@ let viewCards model dispatch playArea cards =
 let viewFinalCards cards = 
   cards |> List.map (fun card -> 
     Column.column [ Column.Width (Screen.All, Column.Is1) ] 
-      [ div []
-          [ span [ ClassName (sprintf "gamecard flip %s" (Golf.getClassName card)) ] [ ] ] ] )
+      [ div [ ClassName "flippableCard gameCard flip" ]
+          [ div [ Class "face front" ] [ ]
+            div [ Class (sprintf "face back %s" (Golf.getClassName card)) ] [ ]  ] ] )
 
 let [<Literal>] ESC_KEY = 27.
 let [<Literal>] ENTER_KEY = 13.
@@ -256,7 +257,27 @@ let newGameView (model: Model) dispatch =
             Control.div [ ]
               [ Button.button [ Button.Color IsPrimary
                                 Button.OnClick (fun _ -> dispatch JoinGame) ]
-                  [ str "Join" ] ] ] ]
+                  [ str "Join" ] ] ] 
+        
+        div [ ]
+          [ Content.content [ ]
+              [ h2 [] [ str "Game play" ]
+                p [] [ str "The game consists of 9 rounds. The lowest score wins. Each player's hand contains 2 rows of 6 cards face down. To start each hand, turn up 1 card in each row. The goal is to match card ranks in each column." ]
+                h2 [] [ str "Scoring" ]
+                h3 [] [ str "Single column scoring" ]
+                ul []
+                  [ li [] [ str "Wild cards -2 pts each" ]
+                    li [] [ str "Matching pair of any non wild rank score 0 pts" ]
+                    li [] [ str "Rank of numbers that do not have a match are added against you." ]
+                    li [] [ str "1 through 10 face value pts" ]
+                    li [] [ str "Jack 11 pts" ]
+                    li [] [ str "Queen 12 pts" ]
+                    li [] [ str "King 0 pts" ] ]
+                h3 [] [ str "Multiple column scoring" ]
+                ul []
+                  [ li [] [ str "4 wild cards together -20 pts" ]
+                    li [] [ str "6 wild cards together -40 pts" ]
+                    li [] [ str "4 of any non wild rank together -10 pts" ] ] ] ] ]
 
 let finishedGameView (model: Model) dispatch =
   match model.GameState with
