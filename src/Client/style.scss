@@ -121,6 +121,15 @@ You can style the card however you want. Here are some examples.
   }
 }
 
+.movingCard {
+  opacity: 0.3;
+  border: 5px solid red;
+}
+
+.emptyCardPosition {
+  opacity: 0.3;
+}
+
 /*
 resized with
 https://bulkresizephotos.com/en?extension=png&resize_value=20

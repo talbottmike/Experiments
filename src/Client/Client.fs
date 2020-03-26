@@ -143,31 +143,17 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
 
 let (++) = List.append
 
-let drawStatus connectionState =
-    Tag.tag [
-        Tag.Color
-            (match connectionState with
-             | DisconnectedFromServer -> Color.IsDanger
-             | Connecting -> Color.IsWarning
-             | ConnectedToServer _ -> Color.IsSuccess)
-    ] [
-        match connectionState with
-        | DisconnectedFromServer -> str "Disconnected from server"
-        | Connecting -> str "Connecting..."
-        | ConnectedToServer _ -> str "Connected to server"
-    ]
-
 let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea card =
   let currentPlayerIsLocal = runningGame.CurrentPlayer.IsSome && runningGame.CurrentPlayer.Value.ClientId = clientId
+  let dropableDestination =
+    match currentPlayerIsLocal, playArea with
+    | false, _ -> None
+    | true, PlayArea.DiscardPile -> Some DropDestination.DiscardPile
+    | true, PlayArea.Row1 -> Some (DropDestination.Row1 card)
+    | true, PlayArea.Row2 -> Some (DropDestination.Row2 card)
+    | true, PlayArea.Hand -> None
+    | true, PlayArea.DrawPile -> None
   let droppableProps =
-    let dropableDestination =
-      match currentPlayerIsLocal, playArea with
-      | false, _ -> None
-      | true, PlayArea.DiscardPile -> Some DropDestination.DiscardPile
-      | true, PlayArea.Row1 -> Some (DropDestination.Row1 card)
-      | true, PlayArea.Row2 -> Some (DropDestination.Row2 card)
-      | true, PlayArea.Hand -> None
-      | true, PlayArea.DrawPile -> None
     dropableDestination
     |> Option.map (fun dropDestination ->
         [ OnDragOver (fun ev -> ev.preventDefault()) :> IHTMLProp
@@ -195,15 +181,20 @@ let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea ca
           ev.dataTransfer.setData("text/plain","dummy") |> ignore
           Move card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
     | true, Some movingCard when card = movingCard ->
-      [ Style [Opacity "0.1"] :> IHTMLProp
-        Draggable isDraggable :> IHTMLProp
+      [ Draggable isDraggable :> IHTMLProp
         OnDragEnd (fun _ -> CancelMove |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
     | true, _ -> []
 
   let flipableProps = 
-    match currentPlayerIsLocal with
-    | true -> [ OnClick (fun e -> FlipCard card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
-    | false -> []
+    match currentPlayerIsLocal, card.Position, runningGame.MovingCard, dropableDestination with
+    | true, FaceDown, None, _ -> [ OnClick (fun e -> FlipCard card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+    | true, FaceUp, None, _ -> [ OnClick (fun e -> Move card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+    | true, FaceUp, Some m, _ when card = m -> [ OnClick (fun e -> CancelMove |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+    | true, FaceDown, Some m, Some dropDestination
+    | true, FaceUp, Some m, Some dropDestination -> [ OnClick (fun e -> DropOn dropDestination |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+    | true, FaceDown, Some m, None -> []
+    | true, FaceUp, Some m, None -> []
+    | false, _, _, _ -> []
 
   let flipClassName =
     match card.Position with
@@ -220,48 +211,48 @@ let viewCard (model : Model) dispatch playArea (card:Card) =
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
     let cardProps = getCardProps dispatch model.ClientId runningGame playArea card    
+    let movingClassName =
+      match runningGame.MovingCard with
+      | Some movingCard when card = movingCard -> "movingCard"
+      | _ -> ""
+      
     let spriteClassName =
       match card.Position with
-      | FaceDown -> "face back"
-      | FaceUp -> sprintf "face back %s" (Golf.getClassName card)
+      | FaceDown -> ""
+      | FaceUp -> Golf.getClassName card
     Column.column [ Column.Width (Screen.All, Column.Is1); ] 
       [ div cardProps 
           [ div [ Class "face front" ] [ ]
-            div [ Class spriteClassName ] [ ] ] ]
+            div [ Class (sprintf "face back %s %s" spriteClassName movingClassName) ] [ ] ] ]
 
 let viewBlankCard model dispatch playArea =
-    let dropDestinationOption =
-      match playArea with
-      | PlayArea.DiscardPile -> Some DropDestination.DiscardPile
-      | PlayArea.Row1 -> None
-      | PlayArea.Row2 -> None
-      | PlayArea.Hand -> None
-      | PlayArea.DrawPile -> None
+  match model.GameState with
+  | NewGame _
+  | Finished _
+  | Running (ServerType _) -> div [] []
+  | Running (ClientType runningGame) ->
+    let cardProps =  
+      let dropDestinationOption =
+        match playArea with
+        | PlayArea.DiscardPile -> Some DropDestination.DiscardPile
+        | PlayArea.Row1 -> None
+        | PlayArea.Row2 -> None
+        | PlayArea.Hand -> None
+        | PlayArea.DrawPile -> None
 
-    let isDroppable = dropDestinationOption.IsSome
+      let (droppableProps:IHTMLProp list) =
+        match dropDestinationOption with
+        | None -> []
+        | Some dropDestination ->
+            [ OnDragOver (fun ev -> ev.preventDefault()) 
+              OnDrop (fun ev -> DropOn dropDestination |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch)  ]
 
-    let (droppableStyles, (droppableProps:IHTMLProp list)) =
-      match dropDestinationOption with
-      | None -> [],[]
-      | Some dropDestination ->
-        if isDroppable then
-            [
-            ],
-            [
-                OnDragOver (fun ev -> ev.preventDefault()) 
-                OnDrop (fun ev -> DropOn dropDestination |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) 
-            ]
-        else [],[]
-
-    let cardStyle: CSSProp list =
-        [
-            Opacity "0.3"
-        ]
-    let cardHtmlProps = ( Style ( cardStyle ) :> IHTMLProp :: droppableProps) 
-
-    Column.column [ Column.Width (Screen.All, Column.Is1); Column.Props cardHtmlProps ]
-      [ div cardHtmlProps
-          [ span [ Class "gamecard css-sprite-CardBackFaceWhiteBlueSmallPattern" ] [ ] ] ]
+      let cardClasses = sprintf "flippableCard gameCard emptyCardPosition" |> Class :> IHTMLProp |> List.singleton
+      cardClasses ++ droppableProps
+    Column.column [ Column.Width (Screen.All, Column.Is1); ] 
+      [ div cardProps 
+          [ div [ Class "face front" ] [ ]
+            div [ Class "face back" ] [ ] ] ]
 
 let viewCards model dispatch playArea cards = 
     cards |> List.map (viewCard model dispatch playArea)
@@ -430,11 +421,12 @@ let runningGameView model dispatch =
               (viewCards model dispatch PlayArea.Row1 player.Cards.Row1)
             Columns.columns []
               (viewCards model dispatch PlayArea.Row2 player.Cards.Row2) 
-          Button.button 
-            [ Button.Color IsDanger
-              Button.OnClick (fun _ -> ServerRunningGameMsg.RequestState |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch )]
-                [ Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ] [ Fa.i [ Fa.Solid.Sync ] [ ] ]
-                  span [] [ str "Sync" ] ] ]
+          // Button.button 
+          //   [ Button.Color IsDanger
+          //     Button.OnClick (fun _ -> ServerRunningGameMsg.RequestState |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch )]
+          //       [ Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ] [ Fa.i [ Fa.Solid.Sync ] [ ] ]
+          //         span [] [ str "Sync" ] ] 
+                  ]
                                      
 let view (model : Model) (dispatch : Msg -> unit) =
     div []
