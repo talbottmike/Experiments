@@ -143,16 +143,18 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
 
 let (++) = List.append
 
-let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea card =
+let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea cardOption =
   let currentPlayerIsLocal = runningGame.CurrentPlayer.IsSome && runningGame.CurrentPlayer.Value.ClientId = clientId
   let dropableDestination =
-    match currentPlayerIsLocal, playArea with
-    | false, _ -> None
-    | true, PlayArea.DiscardPile -> Some DropDestination.DiscardPile
-    | true, PlayArea.Row1 -> Some (DropDestination.Row1 card)
-    | true, PlayArea.Row2 -> Some (DropDestination.Row2 card)
-    | true, PlayArea.Hand -> None
-    | true, PlayArea.DrawPile -> None
+    match currentPlayerIsLocal, playArea, cardOption with
+    | false, _, _ -> None
+    | true, PlayArea.DiscardPile, _ -> Some DropDestination.DiscardPile
+    | true, PlayArea.Row1, Some card -> Some (DropDestination.Row1 card)
+    | true, PlayArea.Row2, Some card -> Some (DropDestination.Row2 card)
+    | true, PlayArea.Row1, None -> None
+    | true, PlayArea.Row2, None -> None
+    | true, PlayArea.Hand, _ -> None
+    | true, PlayArea.DrawPile, _ -> None
   let droppableProps =
     dropableDestination
     |> Option.map (fun dropDestination ->
@@ -164,98 +166,91 @@ let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea ca
   let moveAbleProps =
     let handHasCard = runningGame.CurrentPlayer |> Option.map (fun p -> p.Cards.Hand.IsSome) |> Option.defaultValue false
     let isDraggable = 
-      match currentPlayerIsLocal, card.Position with
+      match currentPlayerIsLocal, cardOption with
       | false, _ -> false
-      | true, FaceDown -> false
-      | true, FaceUp -> 
-        match handHasCard, playArea with
-        | true, PlayArea.Hand -> true
-        | true, _ -> false
-        | false, _ -> true
+      | _, None -> false
+      | true, Some card ->
+        match card.Position with
+        | FaceDown -> false
+        | FaceUp -> 
+          match handHasCard, playArea with
+          | true, PlayArea.Hand -> true
+          | true, _ -> false
+          | false, _ -> true
 
-    match isDraggable, runningGame.MovingCard with
-    | false,_ -> []
-    | true, None ->
+    match isDraggable, runningGame.MovingCard, cardOption with
+    | false,_,_ -> []
+    | true, None, Some card ->
       [ Draggable isDraggable :> IHTMLProp
         OnDragStart (fun ev ->
           ev.dataTransfer.setData("text/plain","dummy") |> ignore
           Move card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
-    | true, Some movingCard when card = movingCard ->
+    | true, Some movingCard, Some card when card = movingCard ->
       [ Draggable isDraggable :> IHTMLProp
         OnDragEnd (fun _ -> CancelMove |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
-    | true, _ -> []
+    | true, _, _ -> []
 
-  let flipableProps = 
-    match currentPlayerIsLocal, card.Position, runningGame.MovingCard, dropableDestination with
-    | true, FaceDown, None, _ -> [ OnClick (fun e -> FlipCard card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
-    | true, FaceUp, None, _ -> [ OnClick (fun e -> Move card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
-    | true, FaceUp, Some m, _ when card = m -> [ OnClick (fun e -> CancelMove |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
-    | true, FaceDown, Some m, Some dropDestination
-    | true, FaceUp, Some m, Some dropDestination -> [ OnClick (fun e -> DropOn dropDestination |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
-    | true, FaceDown, Some m, None -> []
-    | true, FaceUp, Some m, None -> []
-    | false, _, _, _ -> []
+  let clickProps = 
+    match cardOption with
+    | None ->
+      match currentPlayerIsLocal, dropableDestination with
+      | false, _ -> []
+      | _, None -> []
+      | true, Some dropDestination -> [ OnClick (fun e -> DropOn dropDestination |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+    | Some card ->
+      match currentPlayerIsLocal, card.Position, runningGame.MovingCard, dropableDestination with
+      | true, FaceDown, None, _ -> [ OnClick (fun e -> FlipCard card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+      | true, FaceUp, None, _ -> [ OnClick (fun e -> Move card |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+      | true, FaceUp, Some m, _ when card = m -> [ OnClick (fun e -> CancelMove |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+      | true, FaceDown, _, Some dropDestination
+      | true, FaceUp, _, Some dropDestination -> [ OnClick (fun e -> DropOn dropDestination |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch) :> IHTMLProp ]
+      | true, FaceDown, Some m, None -> []
+      | true, FaceUp, Some m, None -> []
+      | false, _, _, _ -> []
 
   let flipClassName =
-    match card.Position with
-    | FaceDown -> ""
-    | FaceUp -> "flip"
+    match cardOption with
+    | None -> ""
+    | Some card ->
+      match card.Position with
+      | FaceDown -> ""
+      | FaceUp -> "flip"
 
-  let gameCardClasses = sprintf "flippableCard gameCard %s" flipClassName |> Class :> IHTMLProp |> List.singleton
-  gameCardClasses ++ flipableProps ++ moveAbleProps ++ droppableProps
+  let emptyPositionClassName =
+    match cardOption with
+    | None -> "emptyCardPosition"
+    | Some _ -> ""
 
-let viewCard (model : Model) dispatch playArea (card:Card) =
+  let gameCardClasses = sprintf "flippableCard gameCard %s %s" flipClassName emptyPositionClassName |> Class :> IHTMLProp |> List.singleton
+  gameCardClasses ++ clickProps ++ moveAbleProps ++ droppableProps
+
+let viewCard (model : Model) dispatch playArea (cardOption:Card option) =
   match model.GameState with
   | NewGame _
   | Finished _
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
-    let cardProps = getCardProps dispatch model.ClientId runningGame playArea card    
+    let cardProps = getCardProps dispatch model.ClientId runningGame playArea cardOption
     let movingClassName =
-      match runningGame.MovingCard with
-      | Some movingCard when card = movingCard -> "movingCard"
+      match runningGame.MovingCard, cardOption with
+      | Some movingCard, Some card when card = movingCard -> "movingCard"
       | _ -> ""
       
     let spriteClassName =
-      match card.Position with
-      | FaceDown -> ""
-      | FaceUp -> Golf.getClassName card
+      match cardOption with
+      | None -> ""
+      | Some card ->
+        match card.Position with
+        | FaceDown -> ""
+        | FaceUp -> Golf.getClassName card
+
     Column.column [ Column.Width (Screen.All, Column.Is1); ] 
       [ div cardProps 
           [ div [ Class "face front" ] [ ]
             div [ Class (sprintf "face back %s %s" spriteClassName movingClassName) ] [ ] ] ]
 
-let viewBlankCard model dispatch playArea =
-  match model.GameState with
-  | NewGame _
-  | Finished _
-  | Running (ServerType _) -> div [] []
-  | Running (ClientType runningGame) ->
-    let cardProps =  
-      let dropDestinationOption =
-        match playArea with
-        | PlayArea.DiscardPile -> Some DropDestination.DiscardPile
-        | PlayArea.Row1 -> None
-        | PlayArea.Row2 -> None
-        | PlayArea.Hand -> None
-        | PlayArea.DrawPile -> None
-
-      let (droppableProps:IHTMLProp list) =
-        match dropDestinationOption with
-        | None -> []
-        | Some dropDestination ->
-            [ OnDragOver (fun ev -> ev.preventDefault()) 
-              OnDrop (fun ev -> DropOn dropDestination |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch)  ]
-
-      let cardClasses = sprintf "flippableCard gameCard emptyCardPosition" |> Class :> IHTMLProp |> List.singleton
-      cardClasses ++ droppableProps
-    Column.column [ Column.Width (Screen.All, Column.Is1); ] 
-      [ div cardProps 
-          [ div [ Class "face front" ] [ ]
-            div [ Class "face back" ] [ ] ] ]
-
 let viewCards model dispatch playArea cards = 
-    cards |> List.map (viewCard model dispatch playArea)
+    cards |> List.map (Some >> viewCard model dispatch playArea)
          
 let viewFinalCards cards = 
   cards |> List.map (fun card -> 
@@ -374,13 +369,9 @@ let handCardsView model dispatch =
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
     match runningGame.CurrentPlayer with
-    | None -> viewBlankCard model dispatch PlayArea.Hand
+    | None -> viewCard model dispatch PlayArea.Hand None
     | Some player ->
-        match player.Cards.Hand with
-        | None ->
-          viewBlankCard model dispatch PlayArea.Hand
-        | Some x ->
-          viewCard model dispatch PlayArea.Hand x
+        viewCard model dispatch PlayArea.Hand player.Cards.Hand
 
 let discardCardsView (model : Model) dispatch =
   match model.GameState with
@@ -391,7 +382,7 @@ let discardCardsView (model : Model) dispatch =
     if runningGame.DiscardPile.Length > 0 then
       viewCards model dispatch PlayArea.DiscardPile (runningGame.DiscardPile |> List.truncate 5)
     else 
-      [ viewBlankCard model dispatch PlayArea.DiscardPile ]
+      [ viewCard model dispatch PlayArea.DiscardPile None ]
 
 let runningGameView model dispatch =
   match model.GameState with
