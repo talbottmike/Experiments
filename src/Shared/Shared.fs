@@ -117,12 +117,13 @@ type ServerMsg =
     | NewGameMsg of ServerNewGameMsg
     | RunningGameMsg of ServerRunningGameMsg
     | RecoverGame of GameState
+    | QuitGame of Guid
 
 /// A type that specifies the messages sent to the client from the server on Elmish.Bridge
 type ClientNewGameMsg =
-    | SyncPlayers of NewPlayer list
-    | PlayerAdded of NewPlayer
-    | PlayerStatusUpdated of (Guid * NewPlayerStatus)
+  | SyncPlayers of NewPlayer list
+  | PlayerAdded of NewPlayer
+  | PlayerStatusUpdated of (Guid * NewPlayerStatus)
 
 type ClientRunningGameMsg =
   | AbortedGame
@@ -133,7 +134,6 @@ type ClientMsg =
   | FinishedGame of FinishedGame
   | GameState of GameState
   | DealtGame of ClientRunningGame
-
 
 module Golf =
   let blankGame = (NewGame { Players = []; NewUserName = ""; })
@@ -188,7 +188,7 @@ module Golf =
         ) 
         (List.empty<Player>,shuffledCards)
 
-    let discardPile, drawPile, serverDrawPile = [{ undealtCards.Head with Position = FaceUp }], undealtCards.Tail.[..6], undealtCards.Tail.[7..]
+    let discardPile, drawPile, serverDrawPile = [{ undealtCards.Head with Position = FaceUp }], undealtCards.Tail.[..3], undealtCards.Tail.[4..]
 
     let sortedPlayersWithNewCards = playersWithNewCards |> List.sortBy (fun x -> x.Id)
     { UndrawnCards = serverDrawPile; DrawPile = drawPile ; DiscardPile = discardPile; Players = sortedPlayersWithNewCards; MovingCard = None; CurrentPlayer = sortedPlayersWithNewCards |> List.tryHead; }
@@ -407,6 +407,11 @@ module Golf =
             | v -> Running v
           | v -> v
         newModel, []
+      | NewGame model, ServerMsg.QuitGame playerId ->
+        let newPlayers = model.Players |> List.filter (fun x -> x.Id <> playerId)
+        let newModel = { model with Players = newPlayers }
+        let newMsg =  newModel.Players |> ClientNewGameMsg.SyncPlayers |> ClientMsg.NewGameMsg 
+        NewGame newModel, [ newMsg ]
       | NewGame model, ServerMsg.NewGameMsg (AddPlayer newPlayer) ->
         let newModel = { model with Players = newPlayer :: model.Players }
         printfn "%A" newModel
@@ -435,11 +440,31 @@ module Golf =
         Running (ServerType runningGame), [(clientGame |> ClientMsg.DealtGame)]
       | NewGame model , ServerMsg.RunningGameMsg RequestState ->
         currentModel, [(AbortedGame |> ClientMsg.RunningGameMsg)]
+      | Running (ServerType model), ServerMsg.QuitGame playerId ->
+        match model.Players |> List.filter (fun x -> x.Id <> playerId) with
+        | [] -> 
+          blankGame, [(ClientMsg.RunningGameMsg AbortedGame)]
+        | newPlayers ->
+          let intermediateState = { model with Players = newPlayers }
+          let newGameState =
+            match model.CurrentPlayer with
+            | Some currentPlayer when currentPlayer.Id = playerId -> endTurn intermediateState
+            | _ -> intermediateState
+          let clientGame = serverGameToClientGame newGameState
+          Running (ServerType newGameState), [(clientGame |> ClientType |> Running |> ClientMsg.GameState)]
       | Running (ServerType model), ServerMsg.RunningGameMsg msg ->
         handleRunningUpdate model msg
       | Finished model, ServerMsg.NewGameMsg Deal ->
         let runningGame = deal model.Players
         Running (ServerType runningGame), [(serverGameToClientGame runningGame |> ClientMsg.DealtGame)]
+      | Finished model, ServerMsg.QuitGame playerId ->
+        match model.Players |> List.filter (fun x -> x.Id <> playerId) with
+        | [] -> 
+          blankGame, [(ClientMsg.RunningGameMsg AbortedGame)]
+        | newPlayers ->
+          let newModel = { model with Players = newPlayers }
+          let newMsg =  ClientMsg.FinishedGame newModel 
+          Finished newModel, [ newMsg ]
       | NewGame _, (ServerMsg.RunningGameMsg _)
       | Running _, (ServerMsg.NewGameMsg _)
       | Finished _, (ServerMsg.NewGameMsg _)

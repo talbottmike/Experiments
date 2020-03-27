@@ -21,6 +21,6 @@ let headLayout (content : XmlNode list) =
 let headBody (content : XmlNode list) = body [] [ yield! content ]
 
 let layout (content : XmlNode list) =
-  html [ _class "has-navbar-fixed-top has-background-grey-lighter" ] 
+  html [ _class "has-background-grey-lighter" ] 
     [ yield headLayout content
       yield headBody content ]

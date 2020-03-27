@@ -41,7 +41,7 @@ let init () : Model * Cmd<Msg> =
 let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
   match msg with
   | IncomingMsg (ClientMsg.RunningGameMsg AbortedGame) ->
-    currentModel, Cmd.none //Cmd.ofMsg (OutgoingMessage (RecoverGame currentModel.GameState))
+    { currentModel with GameState = Golf.blankGame }, Cmd.none // Cmd.ofMsg (OutgoingMessage (RecoverGame currentModel.GameState))
   | OutgoingMessage om ->
     let newServerState, newMsgs = Golf.handleUpdate currentModel.ServerGameState om
     let newCmds = newMsgs |> List.map (IncomingMsg >> Cmd.ofMsg)
@@ -166,7 +166,7 @@ let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea ca
   let gameCardClasses = sprintf "flippableCard gameCard %s %s" flipClassName emptyPositionClassName |> Class :> IHTMLProp |> List.singleton
   gameCardClasses ++ clickProps ++ moveAbleProps ++ droppableProps
 
-let viewCard (model : Model) dispatch playArea (cardOption:Card option) =
+let viewCard (model : Model) dispatch playArea (cardOption:Card option) hideOnMobile =
   match model.GameState with
   | NewGame _
   | Finished _
@@ -186,13 +186,22 @@ let viewCard (model : Model) dispatch playArea (cardOption:Card option) =
         | FaceDown -> ""
         | FaceUp -> Golf.getClassName card
 
-    Column.column [ Column.Width (Screen.All, Column.Is1); ] 
+    let columnProps =
+      if hideOnMobile
+      then [ Column.Width (Screen.All, Column.Is1); Column.Modifiers [ Modifier.IsHidden (Screen.Mobile, true)] ]
+      else [ Column.Width (Screen.All, Column.Is1); ]
+    Column.column columnProps
       [ div cardProps 
           [ div [ Class "face front" ] [ ]
             div [ Class (sprintf "face back %s %s" spriteClassName movingClassName) ] [ ] ] ]
 
-let viewCards model dispatch playArea cards = 
-    cards |> List.map (Some >> viewCard model dispatch playArea)
+let viewCards model dispatch playArea cards truncateOnMobile = 
+    cards 
+    |> List.map Some
+    |> List.mapi (fun i c -> 
+      let hideOnMobile = truncateOnMobile && i > 0
+      viewCard model dispatch playArea c hideOnMobile
+    )
          
 let viewFinalCards cards = 
   cards |> List.map (fun card -> 
@@ -311,19 +320,9 @@ let handCardsView model dispatch =
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
     match runningGame.CurrentPlayer with
-    | None -> viewCard model dispatch PlayArea.Hand None
+    | None -> viewCard model dispatch PlayArea.Hand None false
     | Some player ->
-        viewCard model dispatch PlayArea.Hand player.Cards.Hand
-
-let discardCardsView (model : Model) dispatch =
-  match model.GameState with
-  | NewGame _
-  | Finished _ 
-  | Running (ServerType _) -> []
-  | Running (ClientType runningGame) ->
-    if runningGame.DiscardPile.Length > 0 
-    then viewCards model dispatch PlayArea.DiscardPile (runningGame.DiscardPile |> List.truncate 5)
-    else [ viewCard model dispatch PlayArea.DiscardPile None ]
+        viewCard model dispatch PlayArea.Hand player.Cards.Hand false
 
 let runningGameView model dispatch =
   match model.GameState with
@@ -331,34 +330,39 @@ let runningGameView model dispatch =
   | Finished _ 
   | Running (ServerType _) -> div [] []
   | Running (ClientType runningGame) ->
-    let handAndDiscardView = ( (handCardsView model dispatch) :: (discardCardsView model dispatch) )
-    Container.container [Container.IsFluid; Container.CustomClass "playArea" ]
-        [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
-              [ Heading.h5 [] [ str ("Draw pile:") ] ]
-          Columns.columns []
-            (viewCards model dispatch PlayArea.DrawPile runningGame.DrawPile )
-          Columns.columns []
+    let discardCardsView =
+      runningGame.DiscardPile
+      |> List.tryHead
+      |> (fun c -> [ viewCard model dispatch PlayArea.DiscardPile c false ])
+  
+    let drawPileCardsView = viewCards model dispatch PlayArea.DrawPile runningGame.DrawPile true
+    let discardAndDrawPileAndHandView = [handCardsView model dispatch] ++ discardCardsView ++ drawPileCardsView 
+    //let handAndDiscardView = ( (handCardsView model dispatch) :: (discardCardsView) )
+    Container.container [Container.IsFluid; ]
+        [ Columns.columns []
             [ Column.column [ Column.Width (Screen.All, Column.Is1)  ]
-                [ Heading.h5 [] [ str ("Hand: ") ] ]
-              Column.column [ Column.Width (Screen.All, Column.Is5) ]
-                  [ Heading.h5 [] [ str ("Discard pile:") ] ] ] 
+                [ Heading.h5 [] [ str ("Hand ") ] ]
+              Column.column [ Column.Width (Screen.All, Column.Is1) ]
+                  [ Heading.h5 [] [ str ("Discard") ] ]
+              Column.column [ Column.Width (Screen.All, Column.Is4) ]
+                  [ Heading.h5 [] [ str ("Draw") ] ] ]
           Columns.columns []
-            handAndDiscardView
+            discardAndDrawPileAndHandView
           match runningGame.CurrentPlayer with
           | None -> ()
           | Some player ->
-            Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
-                [ Heading.h5 [] [ str (player.Name) ] ]
             Columns.columns []
-              (viewCards model dispatch PlayArea.Row1 player.Cards.Row1)
+              [ Column.column []
+                  [ Heading.h5 [] [ str (sprintf "Player: %s" player.Name) ] ] ]
             Columns.columns []
-              (viewCards model dispatch PlayArea.Row2 player.Cards.Row2) 
-          // Button.button 
-          //   [ Button.Color IsDanger
-          //     Button.OnClick (fun _ -> ServerRunningGameMsg.RequestState |> ServerMsg.RunningGameMsg |> OutgoingMessage |> dispatch )]
-          //       [ Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ] [ Fa.i [ Fa.Solid.Sync ] [ ] ]
-          //         span [] [ str "Sync" ] ] 
-                  ]
+              (viewCards model dispatch PlayArea.Row1 player.Cards.Row1 false)
+            Columns.columns []
+              (viewCards model dispatch PlayArea.Row2 player.Cards.Row2 false) 
+            Button.button 
+              [ Button.Color IsDanger
+                Button.OnClick (fun _ -> ServerMsg.QuitGame player.Id |> OutgoingMessage |> dispatch )]
+                  [ Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ] [ Fa.i [ Fa.Solid.Trash ] [ ] ]
+                    span [] [ str "Quit game" ] ] ]
                                      
 let view (model : Model) (dispatch : Msg -> unit) =
     div []
@@ -369,18 +373,14 @@ let view (model : Model) (dispatch : Msg -> unit) =
           match model.GameState with
           | NewGame _ -> 
             Container.container [Container.IsFluid]
-                [ newGameView model dispatch ]
+              [ newGameView model dispatch ]
           | Running _ ->
-            Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] [
-              Container.container [Container.IsFluid;]
-                  [ runningGameView model dispatch ] 
-            ]
+            Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] 
+              [ runningGameView model dispatch ]
           | Finished _ ->
-            Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] [
-              Container.container [Container.IsFluid;]
-                  [ finishedGameView model dispatch ] 
-            ]
-        ]
+            Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] 
+              [ Container.container [Container.IsFluid;]
+                  [ finishedGameView model dispatch ] ] ]
 
 #if DEBUG
 open Elmish.Debug
