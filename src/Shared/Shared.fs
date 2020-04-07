@@ -157,7 +157,7 @@ module Golf =
         | King  -> "King"
         | Ace   -> "Ace"
         | Joker -> "Joker"
-    sprintf "css-sprite-%s%s" s r
+    sprintf "css-sprite-Card-%s%s" r s
   
   let addPlayer (p : NewPlayer) = 
     { Player.Id = p.Id
@@ -176,15 +176,19 @@ module Golf =
     |> List.collect (fun _ -> singleDeckOfCards)
     |> List.map (fun v -> { Id = Guid.NewGuid(); Value = v; Position = FaceDown; Selected = false; })
 
-  let deal players = 
+  let dealPlayer (player : Player) (undealtCards : Card list) =
+    let playerRow1Cards, playerRow2Cards, remainingCards = undealtCards.[..5], undealtCards.[6..11], undealtCards.[12..]
+    let playerCards = { Row1 = playerRow1Cards; Row2 = playerRow2Cards; Hand = None; }
+    ({ player with Cards = playerCards; FinalScore = None; }, remainingCards)
+
+  let deal (players : Player list) = 
     let shuffledCards = shuffle deckOfCards
     let playersWithNewCards, undealtCards =
       players
       |> List.fold 
-        (fun (playersDealt, accumulatedCards : Card list) player -> 
-            let playerRow1Cards, playerRow2Cards, remainingCards = accumulatedCards.[..5], accumulatedCards.[6..11], accumulatedCards.[12..]
-            let playerCards = { Row1 = playerRow1Cards; Row2 = playerRow2Cards; Hand = None; }
-            ({ player with Cards = playerCards; FinalScore = None; } :: playersDealt, remainingCards)
+        (fun (playersDealt, accumulatedCards : Card list) (player : Player) ->
+            let player, remainingCards = dealPlayer player accumulatedCards
+            (player :: playersDealt, remainingCards)
         ) 
         (List.empty<Player>,shuffledCards)
 
@@ -228,8 +232,9 @@ module Golf =
         ) 
       )
 
-  let flipUp card = { card with Position = FaceUp; }
-  let flipDown card = { card with Position = FaceDown; }
+
+  let flipUp (card : Card) = { card with Position = FaceUp; }
+  let flipDown (card : Card) = { card with Position = FaceDown; }
 
   let scoreCards cards =
     let pairedCards = List.zip cards.Row1 cards.Row2
@@ -393,6 +398,7 @@ module Golf =
     | _ -> Running (ServerType model), []
   let handleUpdate (currentModel : GameState) msg  =
     try
+      printfn "Current model: %A" currentModel
       match currentModel, msg with
       | _, ServerMsg.RunningGameMsg AbortGame ->            
         blankGame, [(ClientMsg.RunningGameMsg AbortedGame)]
@@ -414,7 +420,7 @@ module Golf =
         NewGame newModel, [ newMsg ]
       | NewGame model, ServerMsg.NewGameMsg (AddPlayer newPlayer) ->
         let newModel = { model with Players = newPlayer :: model.Players }
-        printfn "%A" newModel
+        printfn "New model after add player: %A" newModel
         // if it is a new client, send them everyone
         let newMsg =
           if model.Players |> List.exists (fun x -> x.ClientId = newPlayer.ClientId)
@@ -440,6 +446,9 @@ module Golf =
         Running (ServerType runningGame), [(clientGame |> ClientMsg.DealtGame)]
       | NewGame model , ServerMsg.RunningGameMsg RequestState ->
         currentModel, [(AbortedGame |> ClientMsg.RunningGameMsg)]
+      | Running (ServerType model), ServerMsg.RecoverGame _ ->
+        let clientGame = serverGameToClientGame model
+        Running (ServerType model), [(clientGame |> ClientType |> Running |> ClientMsg.GameState)]
       | Running (ServerType model), ServerMsg.QuitGame playerId ->
         match model.Players |> List.filter (fun x -> x.Id <> playerId) with
         | [] -> 
@@ -465,8 +474,12 @@ module Golf =
           let newModel = { model with Players = newPlayers }
           let newMsg =  ClientMsg.FinishedGame newModel 
           Finished newModel, [ newMsg ]
+      | Running (ServerType model), (ServerMsg.NewGameMsg (AddPlayer newPlayer)) ->
+        let player, remainingCards = addPlayer newPlayer |> (fun x -> dealPlayer x model.UndrawnCards)
+        let newModel = { model with Players = player :: model.Players; UndrawnCards = remainingCards }
+        let clientGame = serverGameToClientGame model
+        Running (ServerType newModel), [(clientGame |> ClientType |> Running |> ClientMsg.GameState)]
       | NewGame _, (ServerMsg.RunningGameMsg _)
-      | Running _, (ServerMsg.NewGameMsg _)
       | Finished _, (ServerMsg.NewGameMsg _)
       | Finished _, (ServerMsg.RunningGameMsg _)
       | _ ->

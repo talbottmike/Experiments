@@ -67,6 +67,7 @@ type GameTracker() =
 let channel = channel {
     join (fun ctx socketId ->
         task {
+            printfn "Client has connected. They've been assigned socket Id: %A" socketId
             //ctx.GetLogger().LogInformation("Client has connected. They've been assigned socket Id: {socketId}", socketId)
             return Channels.Ok
         })

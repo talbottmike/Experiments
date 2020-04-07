@@ -18,8 +18,8 @@ open Fable.Import
 open Browser.Types
 open Browser.WebSocket
 
-// // Cards from
-// // https://opengameart.org/content/vintage-playing-cards?page=3
+// Cards from
+// https://www.sketchappsources.com/free-source/3060-cards-deck-template-sketch-freebie-resource.html
 
 /// Status of the websocket.
 type WsSender = ServerMsg -> unit
@@ -85,6 +85,11 @@ let subscription _ =
 
     Cmd.ofSub sub
 
+let pro gameState =
+  promise {
+      do! Promise.sleep 20000
+      return OutgoingMessage (RecoverGame gameState) }
+
 let init () : Model * Cmd<Msg> =
   let gameStateModel = NewGame { NewGame.Players = []; NewUserName = ""; }
   let model =
@@ -96,13 +101,21 @@ let init () : Model * Cmd<Msg> =
 let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
   match msg with
   | ConnectionChange status ->
-    { currentModel with ConnectionState = status }, Cmd.none
+    let newModel = { currentModel with ConnectionState = status }
+    let cmd =
+      match status with
+      | ConnectedToServer _ -> Cmd.none//Cmd.OfPromise.result (pro currentModel.GameState) //Cmd.ofMsg (OutgoingMessage (RecoverGame currentModel.GameState))
+      | DisconnectedFromServer _ -> Cmd.none
+      | Connecting _ -> Cmd.none
+    newModel, cmd
   | IncomingMsg (ClientMsg.RunningGameMsg AbortedGame) ->
     { currentModel with GameState = Golf.blankGame }, Cmd.none //Cmd.ofMsg (OutgoingMessage (RecoverGame currentModel.GameState))
   | OutgoingMessage om ->
     match currentModel.ConnectionState with
     | ConnectedToServer sender -> sender om
-    | _ -> ()
+    | _ -> 
+      printfn "Unable to send message. Not connected."
+      ()
     currentModel, Cmd.none
   | _ ->
     let gameState, cmd =
@@ -310,66 +323,71 @@ let newGameView (model: Model) dispatch =
   | NewGame newGame ->
     let hasLocalPlayers = newGame.Players |> List.exists (fun x -> x.ClientId = model.ClientId)
     let allPlayersReady = newGame.Players |> List.forall (fun x -> x.Status = NewPlayerStatus.Ready)
-    div []
-      [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
-          [ Heading.h3 [] [ str (sprintf "Players: ") ] ]
-        for x in newGame.Players do
-          let isLocalPlayer = x.ClientId = model.ClientId
-          Columns.columns []
-              [ Column.column [] [ str x.Name ]
-                Column.column [] 
-                  [ match x.Status with
-                    | NewPlayerStatus.Joined ->
-                      match isLocalPlayer with
-                      | true ->
-                        Button.button 
-                            [ Button.Color IsLink
-                              Button.OnClick (fun _ -> dispatch ((SetPlayerStatus (x.Id, NewPlayerStatus.Ready)) |> ServerMsg.NewGameMsg |> OutgoingMessage))  ]
-                              [ str "Ready?" ]
-                      | false ->
-                        Button.button 
-                            [ Button.Color IsLink ]
-                              [ str "Waiting" ]
-                    | NewPlayerStatus.Ready ->
-                      Button.button 
-                            [ Button.Color IsSuccess ]
-                              [ str "Ready" ]
-                  ] ]
-        
-        Field.div [ Field.IsGrouped ]
-          [ Control.div [ Control.HasIconLeft; ]
-              [ Input.text [ Input.Color IsPrimary
-                             Input.Placeholder "Who wants to join?"
-                             Input.ValueOrDefault newGame.NewUserName
-                             Input.Props [(onEnter JoinGame dispatch :> IHTMLProp); AutoFocus true; ]
-                             Input.OnChange (fun ev -> !!ev.target?value |> UpdateUserName |> dispatch) ]
-                Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ]
-                  [ Fa.i [ Fa.Solid.User ] [ ] ] ]
-            Control.div [ ]
-              [ Button.button [ Button.Color IsPrimary
-                                Button.OnClick (fun _ -> dispatch JoinGame) ]
-                  [ str "Join" ] ] ] 
-        
-        div [ ]
-          [ Content.content [ ]
-              [ h2 [] [ str "Game play" ]
-                p [] [ str "The game consists of 9 rounds. The lowest score wins. Each player's hand contains 2 rows of 6 cards face down. To start each hand, turn up 1 card in each row. The goal is to match card ranks in each column." ]
-                h2 [] [ str "Scoring" ]
-                h3 [] [ str "Single column scoring" ]
-                ul []
-                  [ li [] [ str "Wild cards -2 pts each" ]
-                    li [] [ str "Matching pair of any non wild rank score 0 pts" ]
-                    li [] [ str "Rank of numbers that do not have a match are added against you." ]
-                    ul [] 
-                      [ li [] [ str "1 through 10 face value pts" ]
-                        li [] [ str "Jack 11 pts" ]
-                        li [] [ str "Queen 12 pts" ]
-                        li [] [ str "King 0 pts" ] ] ]
-                h3 [] [ str "Multiple column scoring" ]
-                ul []
-                  [ li [] [ str "4 wild cards together -20 pts" ]
-                    li [] [ str "6 wild cards together -40 pts" ]
-                    li [] [ str "4 of any non wild rank together -10 pts" ] ] ] ] ]
+    Columns.columns []
+      [ Column.column []
+          [ Card.card []
+              [ Card.content []
+                  [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
+                      [ Heading.h3 [] [ str (sprintf "Players:") ] ]
+                    for x in newGame.Players do
+                      let isLocalPlayer = x.ClientId = model.ClientId
+                      Columns.columns []
+                          [ Column.column [Column.Width (Screen.All, Column.IsNarrow)] 
+                              [ match x.Status with
+                                | NewPlayerStatus.Joined ->
+                                  match isLocalPlayer with
+                                  | true ->
+                                    Button.button 
+                                        [ Button.Color IsLink
+                                          Button.OnClick (fun _ -> dispatch ((SetPlayerStatus (x.Id, NewPlayerStatus.Ready)) |> ServerMsg.NewGameMsg |> OutgoingMessage))  ]
+                                          [ str "Ready?" ]
+                                  | false ->
+                                    Button.button 
+                                        [ Button.Color IsLink ]
+                                          [ str "Waiting" ]
+                                | NewPlayerStatus.Ready ->
+                                  Button.button 
+                                        [ Button.Color IsSuccess ]
+                                          [ str "Ready" ]
+                              ]
+                            Column.column [ ] [ str x.Name ] ]
+                    
+                    Field.div [ Field.IsGrouped ]
+                      [ Control.div [ Control.HasIconLeft; ]
+                          [ Input.text [ Input.Color IsPrimary
+                                         Input.Placeholder "Who wants to join?"
+                                         Input.ValueOrDefault newGame.NewUserName
+                                         Input.Props [(onEnter JoinGame dispatch :> IHTMLProp); AutoFocus true; ]
+                                         Input.OnChange (fun ev -> !!ev.target?value |> UpdateUserName |> dispatch) ]
+                            Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ]
+                              [ Fa.i [ Fa.Solid.User ] [ ] ] ]
+                        Control.div [ ]
+                          [ Button.button [ Button.Color IsPrimary
+                                            Button.OnClick (fun _ -> dispatch JoinGame) ]
+                              [ str "Join" ] ] ] ] ] ]
+        Column.column []
+          [ Card.card []
+              [ Card.content []
+                  [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
+                      [ Content.content [ ]
+                          [ Heading.h3 [] [ str "Game play:" ]
+                            p [] [ str "The game consists of 9 rounds. The lowest score wins. Each player's hand contains 2 rows of 6 cards face down. To start each hand, turn up 1 card in each row. The goal is to match card ranks in each column." ]
+                            h2 [] [ str "Scoring" ]
+                            h3 [] [ str "Single column scoring" ]
+                            ul []
+                              [ li [] [ str "Wild cards -2 pts each" ]
+                                li [] [ str "Matching pair of any non wild rank score 0 pts" ]
+                                li [] [ str "Rank of numbers that do not have a match are added against you." ]
+                                ul [] 
+                                  [ li [] [ str "1 through 10 face value pts" ]
+                                    li [] [ str "Jack 11 pts" ]
+                                    li [] [ str "Queen 12 pts" ]
+                                    li [] [ str "King 0 pts" ] ] ]
+                            h3 [] [ str "Multiple column scoring" ]
+                            ul []
+                              [ li [] [ str "4 wild cards together -20 pts" ]
+                                li [] [ str "6 wild cards together -40 pts" ]
+                                li [] [ str "4 of any non wild rank together -10 pts" ] ] ] ] ] ] ] ] 
 
 let finishedGameView (model: Model) dispatch =
   match model.GameState with
@@ -460,7 +478,26 @@ let runningGameView model dispatch =
                       [ Button.Color IsDanger
                         Button.OnClick (fun _ -> ServerMsg.QuitGame player.Id |> OutgoingMessage |> dispatch )]
                           [ Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ] [ Fa.i [ Fa.Solid.Trash ] [ ] ]
-                            span [] [ str "Quit game" ] ] ] ] ]
+                            span [] [ str "Quit game" ] ]
+                    Button.button 
+                      [ Button.Color IsDanger
+                        Button.OnClick (fun _ -> ServerMsg.RecoverGame model.GameState |> OutgoingMessage |> dispatch )]
+                          [ Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ] [ Fa.i [ Fa.Solid.Sync ] [ ] ]
+                            span [] [ str "Recover game" ] ] ] ] ]
+
+let drawStatus connectionState =
+    Tag.tag [
+        Tag.Color
+            (match connectionState with
+             | DisconnectedFromServer -> Color.IsDanger
+             | Connecting -> Color.IsWarning
+             | ConnectedToServer _ -> Color.IsSuccess)
+    ] [
+        match connectionState with
+        | DisconnectedFromServer -> str "Disconnected from server"
+        | Connecting -> str "Connecting..."
+        | ConnectedToServer _ -> str "Connected to server"
+    ]
                                      
 let view (model : Model) (dispatch : Msg -> unit) =
     Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ]
@@ -478,7 +515,9 @@ let view (model : Model) (dispatch : Msg -> unit) =
           | Finished _ ->
             Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ] 
               [ Container.container [Container.IsFluid;]
-                  [ finishedGameView model dispatch ] ] ]
+                  [ finishedGameView model dispatch ] ] 
+          drawStatus model.ConnectionState          
+        ]
 
 #if DEBUG
 open Elmish.Debug

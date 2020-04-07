@@ -95,29 +95,35 @@ You can style the card however you want. Here are some examples.
   @include flip(); // include the flip feature.
   user-select: none; // disable selections
   cursor: pointer;  // give the user a hand so they know to click
-  width: 12em; height: 17em;
+  width: 12rem; height: 17rem;
   display: inline-block; // stack em!
   zoom:0.5;
   // -moz-transform:scale(0.5);
   // -moz-transform-origin: 0 0;
   margin: 10px;
   .face { // styles that will be applied to each face of the card.
-    border-radius: 1vw; 
+    border-radius: 1.5rem; 
+
+    // background and box-shadow based on https://neumorphism.io/#f2f3f5
+    background-image: linear-gradient(225deg, #8d8074, #a8988a);
+    box-shadow:  -6px 6px 12px #82766b, 
+                 6px -6px 12px #b8a697;
   }
 }
 
 .playArea {
-  background-image: url(static/assets/table-top.jpg);
+  //background-image: url(static/assets/table-top.jpg);
+  background-color: #f2f3f5;
 }
 
 // Game card specific styles
 .gameCard {
   .face {
-    background-size: 1131.49%;
-    background-image: url(static/assets/VintagePlayingCards/css-sprite-combined.png);
+    background-size: 1692.56%;
+    background-image: url(static/assets/css-sprite-combined.png);
   }
     .front {
-      background-position: 98.1253% 57.7009%;
+      background-position: 57.0317% 60.1874%;
   }
 }
 
@@ -136,63 +142,65 @@ https://bulkresizephotos.com/en?extension=png&resize_value=20
 Responsive CSS Sprite created using: https://responsive-css.us/
 */
 
-.css-sprite-CardBackFaceBlueLargePattern {background-position: 0.107124% 0.111607%; }
-.css-sprite-CardBackFaceBlueSmallPattern {background-position: 88.3235% 57.7009%; }
-.css-sprite-CardBackFaceWhiteBlueLargePattern {background-position: 98.1253% 57.7009%; }
-.css-sprite-CardBackFaceWhiteBlueSmallPattern {background-position: 9.90894% 0.111607%; }
-.css-sprite-Clubs10 {background-position: 98.1253% 0.111607%; }
-.css-sprite-Clubs2 {background-position: 19.7108% 0.111607%; }
-.css-sprite-Clubs3 {background-position: 29.5126% 0.111607%; }
-.css-sprite-Clubs4 {background-position: 39.3144% 0.111607%; }
-.css-sprite-Clubs5 {background-position: 49.1162% 0.111607%; }
-.css-sprite-Clubs6 {background-position: 58.9181% 0.111607%; }
-.css-sprite-Clubs7 {background-position: 68.7199% 0.111607%; }
-.css-sprite-Clubs8 {background-position: 78.5217% 0.111607%; }
-.css-sprite-Clubs9 {background-position: 88.3235% 0.111607%; }
-.css-sprite-ClubsAce {background-position: 0.107124% 14.5089%; }
-.css-sprite-ClubsJack {background-position: 9.90894% 14.5089%; }
-.css-sprite-ClubsJoker {background-position: 19.7108% 14.5089%; }
-.css-sprite-ClubsKing {background-position: 29.5126% 14.5089%; }
-.css-sprite-ClubsQueen {background-position: 39.3144% 14.5089%; }
-.css-sprite-Diamonds10 {background-position: 19.7108% 28.9063%; }
-.css-sprite-Diamonds2 {background-position: 49.1162% 14.5089%; }
-.css-sprite-Diamonds3 {background-position: 58.9181% 14.5089%; }
-.css-sprite-Diamonds4 {background-position: 68.7199% 14.5089%; }
-.css-sprite-Diamonds5 {background-position: 78.5217% 14.5089%; }
-.css-sprite-Diamonds6 {background-position: 88.3235% 14.5089%; }
-.css-sprite-Diamonds7 {background-position: 98.1253% 14.5089%; }
-.css-sprite-Diamonds8 {background-position: 0.107124% 28.9063%; }
-.css-sprite-Diamonds9 {background-position: 9.90894% 28.9063%; }
-.css-sprite-DiamondsAce {background-position: 29.5126% 28.9063%; }
-.css-sprite-DiamondsJack {background-position: 39.3144% 28.9063%; }
-.css-sprite-DiamondsJoker {background-position: 49.1162% 28.9063%; }
-.css-sprite-DiamondsKing {background-position: 58.9181% 28.9063%; }
-.css-sprite-DiamondsQueen {background-position: 68.7199% 28.9063%; }
-.css-sprite-Hearts10 {background-position: 49.1162% 43.3036%; }
-.css-sprite-Hearts2 {background-position: 78.5217% 28.9063%; }
-.css-sprite-Hearts3 {background-position: 88.3235% 28.9063%; }
-.css-sprite-Hearts4 {background-position: 98.1253% 28.9063%; }
-.css-sprite-Hearts5 {background-position: 0.107124% 43.3036%; }
-.css-sprite-Hearts6 {background-position: 9.90894% 43.3036%; }
-.css-sprite-Hearts7 {background-position: 19.7108% 43.3036%; }
-.css-sprite-Hearts8 {background-position: 29.5126% 43.3036%; }
-.css-sprite-Hearts9 {background-position: 39.3144% 43.3036%; }
-.css-sprite-HeartsAce {background-position: 58.9181% 43.3036%; }
-.css-sprite-HeartsJack {background-position: 68.7199% 43.3036%; }
-.css-sprite-HeartsJoker {background-position: 78.5217% 43.3036%; }
-.css-sprite-HeartsKing {background-position: 88.3235% 43.3036%; }
-.css-sprite-HeartsQueen {background-position: 98.1253% 43.3036%; }
-.css-sprite-Spades10 {background-position: 78.5217% 57.7009%; }
-.css-sprite-Spades2 {background-position: 0.107124% 57.7009%; }
-.css-sprite-Spades3 {background-position: 9.90894% 57.7009%; }
-.css-sprite-Spades4 {background-position: 19.7108% 57.7009%; }
-.css-sprite-Spades5 {background-position: 29.5126% 57.7009%; }
-.css-sprite-Spades6 {background-position: 39.3144% 57.7009%; }
-.css-sprite-Spades7 {background-position: 49.1162% 57.7009%; }
-.css-sprite-Spades8 {background-position: 58.9181% 57.7009%; }
-.css-sprite-Spades9 {background-position: 68.7199% 57.7009%; }
-.css-sprite-SpadesAce {background-position: 0.107124% 72.0982%; }
-.css-sprite-SpadesJack {background-position: 9.90894% 72.0982%; }
-.css-sprite-SpadesJoker {background-position: 19.7108% 72.0982%; }
-.css-sprite-SpadesKing {background-position: 29.5126% 72.0982%; }
-.css-sprite-SpadesQueen {background-position: 39.3144% 72.0982%; }
+// .css-sprite-Background-Card, .css-sprite-Card-10Clubs, .css-sprite-Card-10Diamonds, .css-sprite-Card-10Hearts, .css-sprite-Card-10Spades, .css-sprite-Card-2Clubs, .css-sprite-Card-2Diamonds, .css-sprite-Card-2Hearts, .css-sprite-Card-2Spades, .css-sprite-Card-3Clubs, .css-sprite-Card-3Diamonds, .css-sprite-Card-3Hearts, .css-sprite-Card-3Spades, .css-sprite-Card-4Clubs, .css-sprite-Card-4Diamonds, .css-sprite-Card-4Hearts, .css-sprite-Card-4Spades, .css-sprite-Card-5Clubs, .css-sprite-Card-5Diamonds, .css-sprite-Card-5Hearts, .css-sprite-Card-5Spades, .css-sprite-Card-6Clubs, .css-sprite-Card-6Diamonds, .css-sprite-Card-6Hearts, .css-sprite-Card-6Spades, .css-sprite-Card-7Clubs, .css-sprite-Card-7Diamonds, .css-sprite-Card-7Hearts, .css-sprite-Card-7Spades, .css-sprite-Card-8Clubs, .css-sprite-Card-8Diamonds, .css-sprite-Card-8Hearts, .css-sprite-Card-8Spades, .css-sprite-Card-9Clubs, .css-sprite-Card-9Diamonds, .css-sprite-Card-9Hearts, .css-sprite-Card-9Spades, .css-sprite-Card-AceClubs, .css-sprite-Card-AceDiamonds, .css-sprite-Card-AceHearts, .css-sprite-Card-AceSpades, .css-sprite-Card-JackClubs, .css-sprite-Card-JackDiamonds, .css-sprite-Card-JackHearts, .css-sprite-Card-JackSpades, .css-sprite-Card-JokerClubs, .css-sprite-Card-JokerDiamonds, .css-sprite-Card-JokerHearts, .css-sprite-Card-JokerSpades, .css-sprite-Card-KingClubs, .css-sprite-Card-KingDiamonds, .css-sprite-Card-KingHearts, .css-sprite-Card-KingSpades, .css-sprite-Card-QueenClubs, .css-sprite-Card-QueenDiamonds, .css-sprite-Card-QueenHearts, .css-sprite-Card-QueenSpades, .css-sprite-Dark-Background-Card 
+// {display:inline-block; overflow:hidden; background-repeat: no-repeat; width: 242px; height: 340px;
+// background-image:url(css-sprite-combined.png);}
+
+.css-sprite-Background-Card {background-position: 0.0518941% 0.117096%; }
+.css-sprite-Card-10Clubs {background-position: 6.38298% 40.1639%; }
+.css-sprite-Card-10Diamonds {background-position: 12.7141% 40.1639%; }
+.css-sprite-Card-10Hearts {background-position: 19.0451% 40.1639%; }
+.css-sprite-Card-10Spades {background-position: 25.3762% 40.1639%; }
+.css-sprite-Card-2Clubs {background-position: 6.38298% 0.117096%; }
+.css-sprite-Card-2Diamonds {background-position: 12.7141% 0.117096%; }
+.css-sprite-Card-2Hearts {background-position: 19.0451% 0.117096%; }
+.css-sprite-Card-2Spades {background-position: 25.3762% 0.117096%; }
+.css-sprite-Card-3Clubs {background-position: 31.7073% 0.117096%; }
+.css-sprite-Card-3Diamonds {background-position: 38.0384% 0.117096%; }
+.css-sprite-Card-3Hearts {background-position: 44.3695% 0.117096%; }
+.css-sprite-Card-3Spades {background-position: 50.7006% 0.117096%; }
+.css-sprite-Card-4Clubs {background-position: 57.0317% 0.117096%; }
+.css-sprite-Card-4Diamonds {background-position: 63.3627% 0.117096%; }
+.css-sprite-Card-4Hearts {background-position: 69.6938% 0.117096%; }
+.css-sprite-Card-4Spades {background-position: 76.0249% 0.117096%; }
+.css-sprite-Card-5Clubs {background-position: 82.3560% 0.117096%; }
+.css-sprite-Card-5Diamonds {background-position: 88.6871% 0.117096%; }
+.css-sprite-Card-5Hearts {background-position: 95.0182% 0.117096%; }
+.css-sprite-Card-5Spades {background-position: 0.0518941% 20.1405%; }
+.css-sprite-Card-6Clubs {background-position: 6.38298% 20.1405%; }
+.css-sprite-Card-6Diamonds {background-position: 12.7141% 20.1405%; }
+.css-sprite-Card-6Hearts {background-position: 19.0451% 20.1405%; }
+.css-sprite-Card-6Spades {background-position: 25.3762% 20.1405%; }
+.css-sprite-Card-7Clubs {background-position: 31.7073% 20.1405%; }
+.css-sprite-Card-7Diamonds {background-position: 38.0384% 20.1405%; }
+.css-sprite-Card-7Hearts {background-position: 44.3695% 20.1405%; }
+.css-sprite-Card-7Spades {background-position: 50.7006% 20.1405%; }
+.css-sprite-Card-8Clubs {background-position: 57.0317% 20.1405%; }
+.css-sprite-Card-8Diamonds {background-position: 63.3627% 20.1405%; }
+.css-sprite-Card-8Hearts {background-position: 69.6938% 20.1405%; }
+.css-sprite-Card-8Spades {background-position: 76.0249% 20.1405%; }
+.css-sprite-Card-9Clubs {background-position: 82.3560% 20.1405%; }
+.css-sprite-Card-9Diamonds {background-position: 88.6871% 20.1405%; }
+.css-sprite-Card-9Hearts {background-position: 95.0182% 20.1405%; }
+.css-sprite-Card-9Spades {background-position: 0.0518941% 40.1639%; }
+.css-sprite-Card-AceClubs {background-position: 31.7073% 40.1639%; }
+.css-sprite-Card-AceDiamonds {background-position: 38.0384% 40.1639%; }
+.css-sprite-Card-AceHearts {background-position: 44.3695% 40.1639%; }
+.css-sprite-Card-AceSpades {background-position: 50.7006% 40.1639%; }
+.css-sprite-Card-JackClubs {background-position: 57.0317% 40.1639%; }
+.css-sprite-Card-JackDiamonds {background-position: 63.3627% 40.1639%; }
+.css-sprite-Card-JackHearts {background-position: 69.6938% 40.1639%; }
+.css-sprite-Card-JackSpades {background-position: 76.0249% 40.1639%; }
+.css-sprite-Card-JokerClubs {background-position: 82.3560% 40.1639%; }
+.css-sprite-Card-JokerDiamonds {background-position: 88.6871% 40.1639%; }
+.css-sprite-Card-JokerHearts {background-position: 95.0182% 40.1639%; }
+.css-sprite-Card-JokerSpades {background-position: 0.0518941% 60.1874%; }
+.css-sprite-Card-KingClubs {background-position: 6.38298% 60.1874%; }
+.css-sprite-Card-KingDiamonds {background-position: 12.7141% 60.1874%; }
+.css-sprite-Card-KingHearts {background-position: 19.0451% 60.1874%; }
+.css-sprite-Card-KingSpades {background-position: 25.3762% 60.1874%; }
+.css-sprite-Card-QueenClubs {background-position: 31.7073% 60.1874%; }
+.css-sprite-Card-QueenDiamonds {background-position: 38.0384% 60.1874%; }
+.css-sprite-Card-QueenHearts {background-position: 44.3695% 60.1874%; }
+.css-sprite-Card-QueenSpades {background-position: 50.7006% 60.1874%; }
+.css-sprite-Dark-Background-Card {background-position: 57.0317% 60.1874%; }
