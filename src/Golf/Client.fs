@@ -17,7 +17,7 @@ open Fable.Core
 open Fable.Import
 
 // Cards from
-// https://opengameart.org/content/vintage-playing-cards?page=3
+// https://www.sketchappsources.com/free-source/3060-cards-deck-template-sketch-freebie-resource.html
 
 type Model =
   { ClientId : Guid
@@ -85,6 +85,49 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
 
 let (++) = List.append
 
+let getTinyCardProps cardOption =
+  let flipClassName =
+    match cardOption with
+    | None -> ""
+    | Some card ->
+      match card.Position with
+      | FaceDown -> ""
+      | FaceUp -> "flip"
+
+  let gameCardClasses = sprintf "flippableCard tinyGameCard %s" flipClassName |> Class :> IHTMLProp |> List.singleton
+  gameCardClasses
+
+let viewTinyCard (model : Model) dispatch (cardOption:Card option) hideOnMobile =
+  match model.GameState with
+  | NewGame _
+  | Finished _
+  | Running (ServerType _) -> div [] []
+  | Running (ClientType runningGame) ->
+    let cardProps = getTinyCardProps cardOption      
+    let spriteClassName =
+      match cardOption with
+      | None -> ""
+      | Some card ->
+        match card.Position with
+        | FaceDown -> ""
+        | FaceUp -> Golf.getClassName "css-sprite-TinyCard" card
+
+    let columnProps =
+      if hideOnMobile
+      then [ Modifier.IsHidden (Screen.Mobile, true)]
+      else [ ]
+    Content.content [ Content.Props cardProps; Content.Modifiers columnProps ] 
+          [ div [ Class "face front" ] [ ]
+            div [ Class (sprintf "face back %s" spriteClassName) ] [ ] ]
+
+let viewTinyCards model dispatch cards = 
+    cards 
+    |> List.map Some
+    |> List.mapi (fun i c ->
+      let hideOnMobile = true
+      viewTinyCard model dispatch c hideOnMobile
+    )
+    
 let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea cardOption =
   let currentPlayerIsLocal = runningGame.CurrentPlayer.IsSome && runningGame.CurrentPlayer.Value.ClientId = clientId
   let dropableDestination =
@@ -184,7 +227,7 @@ let viewCard (model : Model) dispatch playArea (cardOption:Card option) hideOnMo
       | Some card ->
         match card.Position with
         | FaceDown -> ""
-        | FaceUp -> Golf.getClassName card
+        | FaceUp -> Golf.getClassName "css-sprite-Card" card
 
     let columnProps =
       if hideOnMobile
@@ -232,7 +275,7 @@ let viewFinalCards cards =
     Column.column [ Column.Width (Screen.All, Column.Is1) ] 
       [ div [ ClassName "flippableCard gameCard flip" ]
           [ div [ Class "face front" ] [ ]
-            div [ Class (sprintf "face back %s" (Golf.getClassName card)) ] [ ]  ] ] )
+            div [ Class (sprintf "face back %s" (Golf.getClassName "css-sprite-Card" card)) ] [ ]  ] ] )
 
 let [<Literal>] ESC_KEY = 27.
 let [<Literal>] ENTER_KEY = 13.
@@ -252,66 +295,71 @@ let newGameView (model: Model) dispatch =
   | NewGame newGame ->
     let hasLocalPlayers = newGame.Players |> List.exists (fun x -> x.ClientId = model.ClientId)
     let allPlayersReady = newGame.Players |> List.forall (fun x -> x.Status = NewPlayerStatus.Ready)
-    div []
-      [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
-          [ Heading.h3 [] [ str (sprintf "Players: ") ] ]
-        for x in newGame.Players do
-          let isLocalPlayer = x.ClientId = model.ClientId
-          Columns.columns []
-              [ Column.column [] [ str x.Name ]
-                Column.column [] 
-                  [ match x.Status with
-                    | NewPlayerStatus.Joined ->
-                      match isLocalPlayer with
-                      | true ->
-                        Button.button 
-                            [ Button.Color IsLink
-                              Button.OnClick (fun _ -> dispatch ((SetPlayerStatus (x.Id, NewPlayerStatus.Ready)) |> ServerMsg.NewGameMsg |> OutgoingMessage))  ]
-                              [ str "Ready?" ]
-                      | false ->
-                        Button.button 
-                            [ Button.Color IsLink ]
-                              [ str "Waiting" ]
-                    | NewPlayerStatus.Ready ->
-                      Button.button 
-                            [ Button.Color IsSuccess ]
-                              [ str "Ready" ]
-                  ] ]
-        
-        Field.div [ Field.IsGrouped ]
-          [ Control.div [ Control.HasIconLeft; ]
-              [ Input.text [ Input.Color IsPrimary
-                             Input.Placeholder "Who wants to join?"
-                             Input.ValueOrDefault newGame.NewUserName
-                             Input.Props [(onEnter JoinGame dispatch :> IHTMLProp); AutoFocus true; ]
-                             Input.OnChange (fun ev -> !!ev.target?value |> UpdateUserName |> dispatch) ]
-                Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ]
-                  [ Fa.i [ Fa.Solid.User ] [ ] ] ]
-            Control.div [ ]
-              [ Button.button [ Button.Color IsPrimary
-                                Button.OnClick (fun _ -> dispatch JoinGame) ]
-                  [ str "Join" ] ] ] 
-        
-        div [ ]
-          [ Content.content [ ]
-              [ h2 [] [ str "Game play" ]
-                p [] [ str "The game consists of 9 rounds. The lowest score wins. Each player's hand contains 2 rows of 6 cards face down. To start each hand, turn up 1 card in each row. The goal is to match card ranks in each column." ]
-                h2 [] [ str "Scoring" ]
-                h3 [] [ str "Single column scoring" ]
-                ul []
-                  [ li [] [ str "Wild cards -2 pts each" ]
-                    li [] [ str "Matching pair of any non wild rank score 0 pts" ]
-                    li [] [ str "Rank of numbers that do not have a match are added against you." ]
-                    ul [] 
-                      [ li [] [ str "1 through 10 face value pts" ]
-                        li [] [ str "Jack 11 pts" ]
-                        li [] [ str "Queen 12 pts" ]
-                        li [] [ str "King 0 pts" ] ] ]
-                h3 [] [ str "Multiple column scoring" ]
-                ul []
-                  [ li [] [ str "4 wild cards together -20 pts" ]
-                    li [] [ str "6 wild cards together -40 pts" ]
-                    li [] [ str "4 of any non wild rank together -10 pts" ] ] ] ] ]
+    Columns.columns []
+      [ Column.column []
+          [ Card.card []
+              [ Card.content []
+                  [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
+                      [ Heading.h3 [] [ str (sprintf "Players:") ] ]
+                    for x in newGame.Players do
+                      let isLocalPlayer = x.ClientId = model.ClientId
+                      Columns.columns []
+                          [ Column.column [Column.Width (Screen.All, Column.IsNarrow)] 
+                              [ match x.Status with
+                                | NewPlayerStatus.Joined ->
+                                  match isLocalPlayer with
+                                  | true ->
+                                    Button.button 
+                                        [ Button.Color IsLink
+                                          Button.OnClick (fun _ -> dispatch ((SetPlayerStatus (x.Id, NewPlayerStatus.Ready)) |> ServerMsg.NewGameMsg |> OutgoingMessage))  ]
+                                          [ str "Ready?" ]
+                                  | false ->
+                                    Button.button 
+                                        [ Button.Color IsLink ]
+                                          [ str "Waiting" ]
+                                | NewPlayerStatus.Ready ->
+                                  Button.button 
+                                        [ Button.Color IsSuccess ]
+                                          [ str "Ready" ]
+                              ]
+                            Column.column [ ] [ str x.Name ] ]
+                    
+                    Field.div [ Field.IsGrouped ]
+                      [ Control.div [ Control.HasIconLeft; ]
+                          [ Input.text [ Input.Color IsPrimary
+                                         Input.Placeholder "Who wants to join?"
+                                         Input.ValueOrDefault newGame.NewUserName
+                                         Input.Props [(onEnter JoinGame dispatch :> IHTMLProp); AutoFocus true; ]
+                                         Input.OnChange (fun ev -> !!ev.target?value |> UpdateUserName |> dispatch) ]
+                            Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ]
+                              [ Fa.i [ Fa.Solid.User ] [ ] ] ]
+                        Control.div [ ]
+                          [ Button.button [ Button.Color IsPrimary
+                                            Button.OnClick (fun _ -> dispatch JoinGame) ]
+                              [ str "Join" ] ] ] ] ] ]
+        Column.column []
+          [ Card.card []
+              [ Card.content []
+                  [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Left) ] ]
+                      [ Content.content [ ]
+                          [ Heading.h3 [] [ str "Game play:" ]
+                            p [] [ str "The game consists of 9 rounds. The lowest score wins. Each player's hand contains 2 rows of 6 cards face down. To start each hand, turn up 1 card in each row. The goal is to match card ranks in each column." ]
+                            h2 [] [ str "Scoring" ]
+                            h3 [] [ str "Single column scoring" ]
+                            ul []
+                              [ li [] [ str "Wild cards -2 pts each" ]
+                                li [] [ str "Matching pair of any non wild rank score 0 pts" ]
+                                li [] [ str "Rank of numbers that do not have a match are added against you." ]
+                                ul [] 
+                                  [ li [] [ str "1 through 10 face value pts" ]
+                                    li [] [ str "Jack 11 pts" ]
+                                    li [] [ str "Queen 12 pts" ]
+                                    li [] [ str "King 0 pts" ] ] ]
+                            h3 [] [ str "Multiple column scoring" ]
+                            ul []
+                              [ li [] [ str "4 wild cards together -20 pts" ]
+                                li [] [ str "6 wild cards together -40 pts" ]
+                                li [] [ str "4 of any non wild rank together -10 pts" ] ] ] ] ] ] ] ] 
 
 let finishedGameView (model: Model) dispatch =
   match model.GameState with
@@ -362,7 +410,7 @@ let runningGameView model dispatch =
     let drawPileCardsView = viewCards model dispatch PlayArea.DrawPile runningGame.DrawPile true
     Container.container [Container.IsFluid; ]
         [ Columns.columns []
-            [ Column.column [ Column.Width (Screen.All, Column.Is6) ] 
+            [ Column.column [ Column.Width (Screen.All, Column.Is8) ] 
                 [ Columns.columns [ ]
                     [ Column.column [ Column.Width (Screen.All, Column.Is4) ] 
                         [ Columns.columns []
@@ -402,7 +450,20 @@ let runningGameView model dispatch =
                       [ Button.Color IsDanger
                         Button.OnClick (fun _ -> ServerMsg.QuitGame player.Id |> OutgoingMessage |> dispatch )]
                           [ Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ] [ Fa.i [ Fa.Solid.Trash ] [ ] ]
-                            span [] [ str "Quit game" ] ] ] ] ]
+                            span [] [ str "Quit game" ] ] ] 
+              Column.column [Column.Width (Screen.All, Column.Is4); Column.Modifiers [ Modifier.IsHidden (Screen.Mobile, true)] ]
+                [ Columns.columns [] 
+                    [ Heading.h5 [] [ str "All player cards" ] ]
+                  for p in runningGame.Players do
+                    Columns.columns [] 
+                      [ Column.column [] 
+                          [ Heading.h5 [] [ str p.Name ] ] ]
+                    Columns.columns [] 
+                      [ Column.column [] 
+                          [ yield! (viewTinyCards model dispatch p.Cards.Row1) ] ]
+                    Columns.columns [] 
+                      [ Column.column [] 
+                          [ yield! (viewTinyCards model dispatch p.Cards.Row2) ] ] ] ] ]
                                      
 let view (model : Model) (dispatch : Msg -> unit) =
     Hero.hero [ Hero.IsFullHeight; Hero.CustomClass "playArea" ]

@@ -138,7 +138,7 @@ type ClientMsg =
 module Golf =
   let blankGame = (NewGame { Players = []; NewUserName = ""; })
 
-  let getClassName (card : Card) = 
+  let getClassName prefix (card : Card) = 
     let suit, rank = card.Value
     let s = sprintf "%A" suit
     let r =
@@ -157,7 +157,7 @@ module Golf =
         | King  -> "King"
         | Ace   -> "Ace"
         | Joker -> "Joker"
-    sprintf "css-sprite-Card-%s%s" r s
+    sprintf "%s-%s%s" prefix r s
   
   let addPlayer (p : NewPlayer) = 
     { Player.Id = p.Id

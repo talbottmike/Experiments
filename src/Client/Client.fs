@@ -156,6 +156,49 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
 
 let (++) = List.append
 
+let getTinyCardProps cardOption =
+  let flipClassName =
+    match cardOption with
+    | None -> ""
+    | Some card ->
+      match card.Position with
+      | FaceDown -> ""
+      | FaceUp -> "flip"
+
+  let gameCardClasses = sprintf "flippableCard tinyGameCard %s" flipClassName |> Class :> IHTMLProp |> List.singleton
+  gameCardClasses
+
+let viewTinyCard (model : Model) dispatch (cardOption:Card option) hideOnMobile =
+  match model.GameState with
+  | NewGame _
+  | Finished _
+  | Running (ServerType _) -> div [] []
+  | Running (ClientType runningGame) ->
+    let cardProps = getTinyCardProps cardOption      
+    let spriteClassName =
+      match cardOption with
+      | None -> ""
+      | Some card ->
+        match card.Position with
+        | FaceDown -> ""
+        | FaceUp -> Golf.getClassName "css-sprite-TinyCard" card
+
+    let columnProps =
+      if hideOnMobile
+      then [ Modifier.IsHidden (Screen.Mobile, true)]
+      else [ ]
+    Content.content [ Content.Props cardProps; Content.Modifiers columnProps ] 
+          [ div [ Class "face front" ] [ ]
+            div [ Class (sprintf "face back %s" spriteClassName) ] [ ] ]
+
+let viewTinyCards model dispatch cards = 
+    cards 
+    |> List.map Some
+    |> List.mapi (fun i c ->
+      let hideOnMobile = true
+      viewTinyCard model dispatch c hideOnMobile
+    )
+
 let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea cardOption =
   let currentPlayerIsLocal = runningGame.CurrentPlayer.IsSome && runningGame.CurrentPlayer.Value.ClientId = clientId
   let dropableDestination =
@@ -255,7 +298,7 @@ let viewCard (model : Model) dispatch playArea (cardOption:Card option) hideOnMo
       | Some card ->
         match card.Position with
         | FaceDown -> ""
-        | FaceUp -> Golf.getClassName card
+        | FaceUp -> Golf.getClassName "css-sprite-Card" card
 
     let columnProps =
       if hideOnMobile
@@ -303,7 +346,7 @@ let viewFinalCards cards =
     Column.column [ Column.Width (Screen.All, Column.Is1) ] 
       [ div [ ClassName "flippableCard gameCard flip" ]
           [ div [ Class "face front" ] [ ]
-            div [ Class (sprintf "face back %s" (Golf.getClassName card)) ] [ ]  ] ] )
+            div [ Class (sprintf "face back %s" (Golf.getClassName "css-sprite-Card" card)) ] [ ]  ] ] )
 
 let [<Literal>] ESC_KEY = 27.
 let [<Literal>] ENTER_KEY = 13.
@@ -438,7 +481,7 @@ let runningGameView model dispatch =
     let drawPileCardsView = viewCards model dispatch PlayArea.DrawPile runningGame.DrawPile true
     Container.container [Container.IsFluid; ]
         [ Columns.columns []
-            [ Column.column [ Column.Width (Screen.All, Column.Is6) ] 
+            [ Column.column [ Column.Width (Screen.All, Column.Is8) ] 
                 [ Columns.columns [ ]
                     [ Column.column [ Column.Width (Screen.All, Column.Is4) ] 
                         [ Columns.columns []
@@ -483,7 +526,20 @@ let runningGameView model dispatch =
                       [ Button.Color IsDanger
                         Button.OnClick (fun _ -> ServerMsg.RecoverGame model.GameState |> OutgoingMessage |> dispatch )]
                           [ Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ] [ Fa.i [ Fa.Solid.Sync ] [ ] ]
-                            span [] [ str "Recover game" ] ] ] ] ]
+                            span [] [ str "Recover game" ] ] ]
+              Column.column [Column.Width (Screen.All, Column.Is4); Column.Modifiers [ Modifier.IsHidden (Screen.Mobile, true)] ]
+                [ Columns.columns [] 
+                    [ Heading.h5 [] [ str "All player cards" ] ]
+                  for p in runningGame.Players do
+                    Columns.columns [] 
+                      [ Column.column [] 
+                          [ Heading.h5 [] [ str p.Name ] ] ]
+                    Columns.columns [] 
+                      [ Column.column [] 
+                          [ yield! (viewTinyCards model dispatch p.Cards.Row1) ] ]
+                    Columns.columns [] 
+                      [ Column.column [] 
+                          [ yield! (viewTinyCards model dispatch p.Cards.Row2) ] ] ] ] ]
 
 let drawStatus connectionState =
     Tag.tag [

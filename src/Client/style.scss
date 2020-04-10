@@ -100,9 +100,7 @@ You can style the card however you want. Here are some examples.
   @include flip(); // include the flip feature.
   user-select: none; // disable selections
   cursor: pointer;  // give the user a hand so they know to click
-  width: 12rem; height: 17rem;
   display: inline-block; // stack em!
-  zoom:0.5;
   // -moz-transform:scale(0.5);
   // -moz-transform-origin: 0 0;
   margin: 10px;
@@ -110,9 +108,10 @@ You can style the card however you want. Here are some examples.
     border-radius: 1.5rem; 
 
     // background and box-shadow based on https://neumorphism.io/#f2f3f5
-    background-image: linear-gradient(225deg, #8d8074, #a8988a);
-    box-shadow:  -6px 6px 12px #82766b, 
-                 6px -6px 12px #b8a697;
+    // background: linear-gradient(145deg, #ffffff, #ddd7d7);
+    //background: linear-gradient(145deg, rgba(255, 255, 255, 0.45), rgba(221, 215, 215, 0.45));
+    // box-shadow:  20px 20px 60px #d1cbcb, 
+    //             -20px -20px 60px #ffffff;
   }
 }
 
@@ -137,12 +136,32 @@ You can style the card however you want. Here are some examples.
 
 // Game card specific styles
 .gameCard {
+  width: 12rem; height: 17rem;
+  zoom:0.4;
   .face {
     background-size: 1692.56%;
+    //background: linear-gradient(145deg, rgba(255, 255, 255, 0.45), rgba(221, 215, 215, 0.45)), url(static/assets/css-sprite-combined.png);
     background-image: url(static/assets/css-sprite-combined.png);
+    // box-shadow:  20px 20px 60px #d1cbcb, 
+    //             -20px -20px 60px #ffffff;
   }
     .front {
       background-position: 0.0518941% 0.117096%;
+  }
+}
+
+.tinyGameCard {
+  width: 7rem; height: 10rem;
+  zoom:0.3;
+  .face {
+    background-size: 1462.86%;
+    //background: linear-gradient(145deg, rgba(255, 255, 255, 0.45), rgba(221, 215, 215, 0.45)), url(static/assets/css-sprite-combined.png);
+    background-image: url(static/assets/css-sprite-combined-tiny.png);
+    // box-shadow:  20px 20px 60px #d1cbcb, 
+    //             -20px -20px 60px #ffffff;
+  }
+    .front {
+      background-position: 0.104822% 0.242718%;
   }
 }
 
@@ -223,3 +242,66 @@ Responsive CSS Sprite created using: https://responsive-css.us/
 .css-sprite-Card-QueenHearts {background-position: 44.3695% 60.1874%; }
 .css-sprite-Card-QueenSpades {background-position: 50.7006% 60.1874%; }
 .css-sprite-Dark-Background-Card {background-position: 57.0317% 60.1874%; }
+
+// .css-sprite-Background-Card, .css-sprite-Card-10Clubs, .css-sprite-Card-10Diamonds, .css-sprite-Card-10Hearts, .css-sprite-Card-10Spades, .css-sprite-Card-2Clubs, .css-sprite-Card-2Diamonds, .css-sprite-Card-2Hearts, .css-sprite-Card-2Spades, .css-sprite-Card-3Clubs, .css-sprite-Card-3Diamonds, .css-sprite-Card-3Hearts, .css-sprite-Card-3Spades, .css-sprite-Card-4Clubs, .css-sprite-Card-4Diamonds, .css-sprite-Card-4Hearts, .css-sprite-Card-4Spades, .css-sprite-Card-5Clubs, .css-sprite-Card-5Diamonds, .css-sprite-Card-5Hearts, .css-sprite-Card-5Spades, .css-sprite-Card-6Clubs, .css-sprite-Card-6Diamonds, .css-sprite-Card-6Hearts, .css-sprite-Card-6Spades, .css-sprite-Card-7Clubs, .css-sprite-Card-7Diamonds, .css-sprite-Card-7Hearts, .css-sprite-Card-7Spades, .css-sprite-Card-8Clubs, .css-sprite-Card-8Diamonds, .css-sprite-Card-8Hearts, .css-sprite-Card-8Spades, .css-sprite-Card-9Clubs, .css-sprite-Card-9Diamonds, .css-sprite-Card-9Hearts, .css-sprite-Card-9Spades, .css-sprite-Card-AceClubs, .css-sprite-Card-AceDiamonds, .css-sprite-Card-AceHearts, .css-sprite-Card-AceSpades, .css-sprite-Card-JackClubs, .css-sprite-Card-JackDiamonds, .css-sprite-Card-JackHearts, .css-sprite-Card-JackSpades, .css-sprite-Card-JokerClubs, .css-sprite-Card-JokerDiamonds, .css-sprite-Card-JokerHearts, .css-sprite-Card-JokerSpades, .css-sprite-Card-KingClubs, .css-sprite-Card-KingDiamonds, .css-sprite-Card-KingHearts, .css-sprite-Card-KingSpades, .css-sprite-Card-QueenClubs, .css-sprite-Card-QueenDiamonds, .css-sprite-Card-QueenHearts, .css-sprite-Card-QueenSpades, .css-sprite-Dark-Background-Card 
+// {display:inline-block; overflow:hidden; background-repeat: no-repeat;
+// background-image:url(css-sprite-combined-tiny.png);}
+
+.css-sprite-Background-TinyCard {background-position: 0.104822% 0.242718%; }
+.css-sprite-TinyCard-10Clubs {background-position: 7.54717% 0.242718%; }
+.css-sprite-TinyCard-10Diamonds {background-position: 14.9895% 0.242718%; }
+.css-sprite-TinyCard-10Hearts {background-position: 22.4319% 0.242718%; }
+.css-sprite-TinyCard-10Spades {background-position: 29.8742% 0.242718%; }
+.css-sprite-TinyCard-2Clubs {background-position: 37.3166% 0.242718%; }
+.css-sprite-TinyCard-2Diamonds {background-position: 44.7589% 0.242718%; }
+.css-sprite-TinyCard-2Hearts {background-position: 52.2013% 0.242718%; }
+.css-sprite-TinyCard-2Spades {background-position: 59.6436% 0.242718%; }
+.css-sprite-TinyCard-3Clubs {background-position: 67.0860% 0.242718%; }
+.css-sprite-TinyCard-3Diamonds {background-position: 74.5283% 0.242718%; }
+.css-sprite-TinyCard-3Hearts {background-position: 81.9706% 0.242718%; }
+.css-sprite-TinyCard-3Spades {background-position: 89.4130% 0.242718%; }
+.css-sprite-TinyCard-4Clubs {background-position: 96.8553% 0.242718%; }
+.css-sprite-TinyCard-4Diamonds {background-position: 0.104822% 24.7573%; }
+.css-sprite-TinyCard-4Hearts {background-position: 7.54717% 24.7573%; }
+.css-sprite-TinyCard-4Spades {background-position: 14.9895% 24.7573%; }
+.css-sprite-TinyCard-5Clubs {background-position: 22.4319% 24.7573%; }
+.css-sprite-TinyCard-5Diamonds {background-position: 29.8742% 24.7573%; }
+.css-sprite-TinyCard-5Hearts {background-position: 37.3166% 24.7573%; }
+.css-sprite-TinyCard-5Spades {background-position: 44.7589% 24.7573%; }
+.css-sprite-TinyCard-6Clubs {background-position: 52.2013% 24.7573%; }
+.css-sprite-TinyCard-6Diamonds {background-position: 59.6436% 24.7573%; }
+.css-sprite-TinyCard-6Hearts {background-position: 67.0860% 24.7573%; }
+.css-sprite-TinyCard-6Spades {background-position: 74.5283% 24.7573%; }
+.css-sprite-TinyCard-7Clubs {background-position: 81.9706% 24.7573%; }
+.css-sprite-TinyCard-7Diamonds {background-position: 89.4130% 24.7573%; }
+.css-sprite-TinyCard-7Hearts {background-position: 96.8553% 24.7573%; }
+.css-sprite-TinyCard-7Spades {background-position: 0.104822% 49.2718%; }
+.css-sprite-TinyCard-8Clubs {background-position: 7.54717% 49.2718%; }
+.css-sprite-TinyCard-8Diamonds {background-position: 14.9895% 49.2718%; }
+.css-sprite-TinyCard-8Hearts {background-position: 22.4319% 49.2718%; }
+.css-sprite-TinyCard-8Spades {background-position: 29.8742% 49.2718%; }
+.css-sprite-TinyCard-9Clubs {background-position: 37.3166% 49.2718%; }
+.css-sprite-TinyCard-9Diamonds {background-position: 44.7589% 49.2718%; }
+.css-sprite-TinyCard-9Hearts {background-position: 52.2013% 49.2718%; }
+.css-sprite-TinyCard-9Spades {background-position: 59.6436% 49.2718%; }
+.css-sprite-TinyCard-AceClubs {background-position: 67.0860% 49.2718%; }
+.css-sprite-TinyCard-AceDiamonds {background-position: 74.5283% 49.2718%; }
+.css-sprite-TinyCard-AceHearts {background-position: 81.9706% 49.2718%; }
+.css-sprite-TinyCard-AceSpades {background-position: 89.4130% 49.2718%; }
+.css-sprite-TinyCard-JackClubs {background-position: 96.8553% 49.2718%; }
+.css-sprite-TinyCard-JackDiamonds {background-position: 0.104822% 73.7864%; }
+.css-sprite-TinyCard-JackHearts {background-position: 7.54717% 73.7864%; }
+.css-sprite-TinyCard-JackSpades {background-position: 14.9895% 73.7864%; }
+.css-sprite-TinyCard-JokerClubs {background-position: 22.4319% 73.7864%; }
+.css-sprite-TinyCard-JokerDiamonds {background-position: 29.8742% 73.7864%; }
+.css-sprite-TinyCard-JokerHearts {background-position: 37.3166% 73.7864%; }
+.css-sprite-TinyCard-JokerSpades {background-position: 44.7589% 73.7864%; }
+.css-sprite-TinyCard-KingClubs {background-position: 52.2013% 73.7864%; }
+.css-sprite-TinyCard-KingDiamonds {background-position: 59.6436% 73.7864%; }
+.css-sprite-TinyCard-KingHearts {background-position: 67.0860% 73.7864%; }
+.css-sprite-TinyCard-KingSpades {background-position: 74.5283% 73.7864%; }
+.css-sprite-TinyCard-QueenClubs {background-position: 81.9706% 73.7864%; }
+.css-sprite-TinyCard-QueenDiamonds {background-position: 89.4130% 73.7864%; }
+.css-sprite-TinyCard-QueenHearts {background-position: 96.8553% 73.7864%; }
+.css-sprite-TinyCard-QueenSpades {background-position: 0.104822% 98.3010%; }
+.css-sprite-TinyDark-Background-Card {background-position: 7.54717% 98.3010%; }
