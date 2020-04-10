@@ -192,12 +192,14 @@ let viewTinyCard (model : Model) dispatch (cardOption:Card option) hideOnMobile 
             div [ Class (sprintf "face back %s" spriteClassName) ] [ ] ]
 
 let viewTinyCards model dispatch cards = 
+  let cardsView =
     cards 
     |> List.map Some
-    |> List.mapi (fun i c ->
+    |> List.mapi (fun i c -> 
       let hideOnMobile = true
-      viewTinyCard model dispatch c hideOnMobile
+      Column.column [] [ viewTinyCard model dispatch c hideOnMobile ]
     )
+  Columns.columns [ Columns.IsGap (Screen.All, Columns.Is1) ] cardsView
 
 let getCardProps dispatch clientId (runningGame : ClientRunningGame) playArea cardOption =
   let currentPlayerIsLocal = runningGame.CurrentPlayer.IsSome && runningGame.CurrentPlayer.Value.ClientId = clientId
@@ -309,12 +311,14 @@ let viewCard (model : Model) dispatch playArea (cardOption:Card option) hideOnMo
             div [ Class (sprintf "face back %s %s" spriteClassName movingClassName) ] [ ] ]
 
 let viewCards model dispatch playArea cards truncateOnMobile = 
+  let cardsView =
     cards 
     |> List.map Some
     |> List.mapi (fun i c -> 
       let hideOnMobile = truncateOnMobile && i > 0
-      viewCard model dispatch playArea c hideOnMobile
+      Column.column [] [ viewCard model dispatch playArea c hideOnMobile ]
     )
+  Columns.columns [ ] cardsView
 
 let viewCardPairVertical model dispatch (row1Card, row2Card) = 
   let hideOnMobile = false
@@ -327,7 +331,7 @@ let viewCardPairVertical model dispatch (row1Card, row2Card) =
               [ viewCard model dispatch PlayArea.Row2 (Some row2Card) hideOnMobile ] ] ] ]
 
 let viewCardPairsVertical model dispatch row1Cards row2Cards =
-  Columns.columns [ Columns.CustomClass "is-hidden-mobile" ]
+  Columns.columns [ Columns.CustomClass "is-hidden-mobile"; Columns.IsGap (Screen.All, Columns.Is2) ]
     (List.zip row1Cards row2Cards |> List.collect (fun p -> viewCardPairVertical model dispatch p))
 
 let viewCardPairHorizontal model dispatch (row1Card, row2Card) = 
@@ -488,31 +492,31 @@ let runningGameView model dispatch =
                             [ Column.column [ ] 
                                 [ Columns.columns []
                                     [ Column.column [ ]
-                                        [ Heading.h5 [] [ str ("Hand ") ] ] ]
+                                        [ Heading.h6 [] [ str ("Hand ") ] ] ]
                                   Columns.columns []
                                     [ Column.column [ ] 
                                         [ handCardsView model dispatch ] ] ] 
                               Column.column [ ] 
                                 [ Columns.columns []
                                     [ Column.column [ ]
-                                        [ Heading.h5 [] [ str ("Discard ") ] ] ]
+                                        [ Heading.h6 [] [ str ("Discard ") ] ] ]
                                   Columns.columns []
                                     [ Column.column [ ] 
                                         [ discardCardView ] ] ] ] ] 
                       Column.column [ Column.Width (Screen.All, Column.Is8) ] 
                         [ Columns.columns []
                             [ Column.column []
-                                [ Heading.h5 [] [ str ("Draw") ] ] ]
+                                [ Heading.h6 [] [ str ("Draw") ] ] ]
                           Columns.columns []
                             [ Column.column []
-                                drawPileCardsView ] ] ]
+                                [ drawPileCardsView ] ] ] ]
 
                   match runningGame.CurrentPlayer with
                   | None -> ()
                   | Some player ->
                     Columns.columns []
                       [ Column.column []
-                          [ Heading.h5 [] [ str (sprintf "Player: %s" player.Name) ] ] ]
+                          [ Heading.h6 [] [ str (sprintf "Player: %s" player.Name) ] ] ]
                     // visible when on mobile
                     viewCardPairsVertical model dispatch player.Cards.Row1 player.Cards.Row2
                     // visible when not on mobile
@@ -533,13 +537,13 @@ let runningGameView model dispatch =
                   for p in runningGame.Players do
                     Columns.columns [] 
                       [ Column.column [] 
-                          [ Heading.h5 [] [ str p.Name ] ] ]
+                          [ Heading.h6 [] [ str p.Name ] ] ]
                     Columns.columns [] 
                       [ Column.column [] 
-                          [ yield! (viewTinyCards model dispatch p.Cards.Row1) ] ]
+                          [ viewTinyCards model dispatch p.Cards.Row1 ] ]
                     Columns.columns [] 
                       [ Column.column [] 
-                          [ yield! (viewTinyCards model dispatch p.Cards.Row2) ] ] ] ] ]
+                          [ viewTinyCards model dispatch p.Cards.Row2 ] ] ] ] ]
 
 let drawStatus connectionState =
     Tag.tag [

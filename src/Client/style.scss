@@ -103,16 +103,16 @@ You can style the card however you want. Here are some examples.
   display: inline-block; // stack em!
   // -moz-transform:scale(0.5);
   // -moz-transform-origin: 0 0;
-  margin: 10px;
-  .face { // styles that will be applied to each face of the card.
-    border-radius: 1.5rem; 
+  //margin: 10px;
+  // .face { // styles that will be applied to each face of the card.
+     
 
     // background and box-shadow based on https://neumorphism.io/#f2f3f5
     // background: linear-gradient(145deg, #ffffff, #ddd7d7);
     //background: linear-gradient(145deg, rgba(255, 255, 255, 0.45), rgba(221, 215, 215, 0.45));
     // box-shadow:  20px 20px 60px #d1cbcb, 
     //             -20px -20px 60px #ffffff;
-  }
+  // }
 }
 
 .playArea {
@@ -136,9 +136,10 @@ You can style the card however you want. Here are some examples.
 
 // Game card specific styles
 .gameCard {
-  width: 12rem; height: 17rem;
-  zoom:0.4;
+  width: 8vw; height: 11.3vw;
+  //zoom:0.5;
   .face {
+    //border-radius: .5vw;
     background-size: 1692.56%;
     //background: linear-gradient(145deg, rgba(255, 255, 255, 0.45), rgba(221, 215, 215, 0.45)), url(static/assets/css-sprite-combined.png);
     background-image: url(static/assets/css-sprite-combined.png);
@@ -151,8 +152,8 @@ You can style the card however you want. Here are some examples.
 }
 
 .tinyGameCard {
-  width: 7rem; height: 10rem;
-  zoom:0.3;
+  width: 4vw; height: 5.8vw;
+  //zoom:0.3;
   .face {
     background-size: 1462.86%;
     //background: linear-gradient(145deg, rgba(255, 255, 255, 0.45), rgba(221, 215, 215, 0.45)), url(static/assets/css-sprite-combined.png);
