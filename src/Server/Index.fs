@@ -12,6 +12,9 @@ let index =
                     [ a [ _href "app/golf" ] [ rawText "Golf" ] ] ]
               div [ _class "tile box" ]
                 [ h2 [ ]
-                    [ a [ _href "app/tens" ] [ rawText "Tens" ] ] ] ] ]
+                    [ a [ _href "app/tens" ] [ rawText "Tens" ] ] ]
+              div [ _class "tile box" ]
+                [ h2 [ ]
+                    [ a [ _href "app/memorization" ] [ rawText "Memorization" ] ] ] ] ]
 
 let layout = Layout.layout index

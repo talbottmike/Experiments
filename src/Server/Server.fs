@@ -103,6 +103,13 @@ let tensLayout =
       yield script [ _src (HashInfo.withHash "/resources/tensApp" "js") ] [] ]
   Layout.layout index
 
+let memorizationLayout = 
+  let index =
+    [ yield div [ _id "elmish-app" ] []
+      yield script [ _src (HashInfo.withHash "/resources/vendors" "js") ] []
+      yield script [ _src (HashInfo.withHash "/resources/memorizationApp" "js") ] [] ]
+  Layout.layout index
+
 let defaultView =
   router {
     get "/" (htmlView Index.layout)
@@ -113,6 +120,7 @@ let defaultView =
     // pipe_through authorize auth not required to access app. However auth is required for API routes.
     get "/app/golf" (htmlView golfLayout)
     get "/app/tens" (htmlView tensLayout)
+    get "/app/memorization" (htmlView memorizationLayout)
     get "/app" (htmlView App.layout)
   }
 

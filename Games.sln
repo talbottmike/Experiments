@@ -22,6 +22,10 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Tens", "src\Tens\Tens.fspro
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Golf", "src\Golf\Golf.fsproj", "{DF0DEEE7-C1A2-4545-816F-1A0A7BE44CB8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E9592BC9-7641-42F7-BE80-A4590FC9734C}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Memorization", "src\Memorization\Memorization.fsproj", "{A9B3343B-A0E8-485C-8B94-5DFEA6B7C4BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +46,10 @@ Global
 		{DF0DEEE7-C1A2-4545-816F-1A0A7BE44CB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF0DEEE7-C1A2-4545-816F-1A0A7BE44CB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF0DEEE7-C1A2-4545-816F-1A0A7BE44CB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9B3343B-A0E8-485C-8B94-5DFEA6B7C4BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9B3343B-A0E8-485C-8B94-5DFEA6B7C4BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9B3343B-A0E8-485C-8B94-5DFEA6B7C4BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9B3343B-A0E8-485C-8B94-5DFEA6B7C4BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

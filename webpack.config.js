@@ -19,6 +19,7 @@ var CONFIG = {
     fsharpEntry: './src/Client/Client.fsproj',
     fsharpEntry2: './src/Golf/Golf.fsproj',
     fsharpEntry4: './src/Tens/Tens.fsproj',
+    fsharpEntry5: './src/Memorization/Memorization.fsproj',
     cssEntry: './src/Client/style.scss',
     // outputDir: './src/Client/deploy',
     // assetsDir: './src/Client/public',
@@ -110,10 +111,12 @@ module.exports = {
         app: [resolve(CONFIG.fsharpEntry), resolve(CONFIG.cssEntry)],
         golfApp: [resolve(CONFIG.fsharpEntry2), resolve(CONFIG.cssEntry)],
         tensApp: [resolve(CONFIG.fsharpEntry4), resolve(CONFIG.cssEntry)],
+        memorizationApp: [resolve(CONFIG.fsharpEntry5), resolve(CONFIG.cssEntry)],
     } : {
             app: [resolve(CONFIG.fsharpEntry)],
             golfApp: [resolve(CONFIG.fsharpEntry2)],
             tensApp: [resolve(CONFIG.fsharpEntry4)],
+            memorizationApp: [resolve(CONFIG.fsharpEntry5)],
             style: [resolve(CONFIG.cssEntry)]
         },
     // Add a hash to the output file name in production
